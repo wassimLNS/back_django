@@ -1,0 +1,178 @@
+from rest_framework import status
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from .models import Ticket, TypeService, PieceJointe, Escalade
+from .serializers import (TypeServiceSerializer, CreerTicketSerializer, TicketListSerializer, TicketDetailSerializer, MettreAJourTicketSerializer, SatisfactionSerializer, PieceJointeUploadSerializer, CreerEscaladeSerializer, EscaladeSerializer)
+from apps.users.permissions import EstClient, EstAgent, EstAgentEscalade, EstAdmin
+
+
+class TypesServiceView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        types = TypeService.objects.filter(actif=True)
+        return Response(TypeServiceSerializer(types, many=True).data)
+
+
+class MesTicketsView(APIView):
+    permission_classes = [IsAuthenticated, EstClient]
+
+    def get(self, request):
+        tickets = Ticket.objects.filter(client=request.user).order_by('-created_at')
+        return Response(TicketListSerializer(tickets, many=True).data)
+
+    def post(self, request):
+        serializer = CreerTicketSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            ticket = serializer.save()
+            return Response(TicketDetailSerializer(ticket).data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class MonTicketDetailView(APIView):
+    permission_classes = [IsAuthenticated, EstClient]
+
+    def get_ticket(self, ticket_id, client):
+        try:
+            return Ticket.objects.get(id=ticket_id, client=client)
+        except Ticket.DoesNotExist:
+            return None
+
+    def get(self, request, ticket_id):
+        ticket = self.get_ticket(ticket_id, request.user)
+        if not ticket:
+            return Response({'error': 'Ticket introuvable'}, status=status.HTTP_404_NOT_FOUND)
+        return Response(TicketDetailSerializer(ticket).data)
+
+    def post(self, request, ticket_id):
+        ticket = self.get_ticket(ticket_id, request.user)
+        if not ticket:
+            return Response({'error': 'Ticket introuvable'}, status=status.HTTP_404_NOT_FOUND)
+        if ticket.statut not in ['resolu', 'ferme']:
+            return Response({'error': 'Vous ne pouvez noter que les tickets résolus ou fermés'}, status=status.HTTP_400_BAD_REQUEST)
+        serializer = SatisfactionSerializer(ticket, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class MesTicketsAgentView(APIView):
+    permission_classes = [IsAuthenticated, EstAgent]
+
+    def get(self, request):
+        tickets = Ticket.objects.filter(agent=request.user).order_by('-created_at')
+        return Response(TicketListSerializer(tickets, many=True).data)
+
+
+class TicketAgentDetailView(APIView):
+    permission_classes = [IsAuthenticated, EstAgent]
+
+    def get_ticket(self, ticket_id, agent):
+        try:
+            return Ticket.objects.get(id=ticket_id, agent=agent)
+        except Ticket.DoesNotExist:
+            return None
+
+    def get(self, request, ticket_id):
+        ticket = self.get_ticket(ticket_id, request.user)
+        if not ticket:
+            return Response({'error': 'Ticket introuvable'}, status=status.HTTP_404_NOT_FOUND)
+        return Response(TicketDetailSerializer(ticket).data)
+
+    def put(self, request, ticket_id):
+        ticket = self.get_ticket(ticket_id, request.user)
+        if not ticket:
+            return Response({'error': 'Ticket introuvable'}, status=status.HTTP_404_NOT_FOUND)
+        serializer = MettreAJourTicketSerializer(ticket, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(TicketDetailSerializer(ticket).data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class TicketsEscaladesView(APIView):
+    permission_classes = [IsAuthenticated, EstAgentEscalade]
+
+    def get(self, request):
+        if request.user.role == 'agent_technique':
+            tickets = Ticket.objects.filter(agent_technique=request.user).order_by('-created_at')
+        else:
+            tickets = Ticket.objects.filter(agent_annexe=request.user).order_by('-created_at')
+        return Response(TicketListSerializer(tickets, many=True).data)
+
+
+class TousLesTicketsView(APIView):
+    permission_classes = [IsAuthenticated, EstAdmin]
+
+    def get(self, request):
+        tickets = Ticket.objects.filter(centre=request.user.centre).order_by('-created_at')
+        statut   = request.query_params.get('statut')
+        priorite = request.query_params.get('priorite')
+        agent_id = request.query_params.get('agent_id')
+        if statut:
+            tickets = tickets.filter(statut=statut)
+        if priorite:
+            tickets = tickets.filter(priorite=priorite)
+        if agent_id:
+            tickets = tickets.filter(agent__id=agent_id)
+        return Response(TicketListSerializer(tickets, many=True).data)
+
+
+class AttribuerTicketView(APIView):
+    permission_classes = [IsAuthenticated, EstAdmin]
+
+    def post(self, request, ticket_id):
+        try:
+            ticket = Ticket.objects.get(id=ticket_id, centre=request.user.centre)
+        except Ticket.DoesNotExist:
+            return Response({'error': 'Ticket introuvable'}, status=status.HTTP_404_NOT_FOUND)
+
+        agent_id = request.data.get('agent_id')
+        if not agent_id:
+            return Response({'error': 'agent_id requis'}, status=status.HTTP_400_BAD_REQUEST)
+
+        from apps.users.models import Utilisateur, Role
+        try:
+            agent = Utilisateur.objects.get(id=agent_id, centre=request.user.centre, role=Role.AGENT, actif=True)
+        except Utilisateur.DoesNotExist:
+            return Response({'error': 'Agent introuvable'}, status=status.HTTP_404_NOT_FOUND)
+
+        from django.utils import timezone
+        ticket.agent = agent
+        ticket.statut = 'en_cours'
+        ticket.pris_en_charge_a = timezone.now()
+        ticket.attribution_auto = False
+        ticket.save()
+        return Response(TicketDetailSerializer(ticket).data)
+
+
+class PiecesJointesView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, ticket_id):
+        try:
+            ticket = Ticket.objects.get(id=ticket_id)
+        except Ticket.DoesNotExist:
+            return Response({'error': 'Ticket introuvable'}, status=status.HTTP_404_NOT_FOUND)
+        serializer = PieceJointeUploadSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(ticket=ticket, uploaded_by=request.user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class EscaladerTicketView(APIView):
+    permission_classes = [IsAuthenticated, EstAgent]
+
+    def post(self, request, ticket_id):
+        try:
+            ticket = Ticket.objects.get(id=ticket_id, agent=request.user)
+        except Ticket.DoesNotExist:
+            return Response({'error': 'Ticket introuvable'}, status=status.HTTP_404_NOT_FOUND)
+        serializer = CreerEscaladeSerializer(data=request.data, context={'ticket': ticket, 'request': request})
+        if serializer.is_valid():
+            escalade = serializer.save()
+            return Response(EscaladeSerializer(escalade).data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
