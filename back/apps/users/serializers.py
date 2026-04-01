@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
-from .models import Utilisateur, HistoriqueConnexion, Role
+from .models import Utilisateur, HistoriqueConnexion, Role, LigneTelephonique
 
 
 # ============================================================
@@ -59,11 +59,36 @@ class LoginAgentSerializer(serializers.Serializer):
 
 
 # ============================================================
+# LIGNE TÉLÉPHONIQUE
+# ============================================================
+class LigneTelephoniqueSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model  = LigneTelephonique
+        fields = [
+            'id', 'numero', 'type_abonnement',
+            'num_contrat', 'date_abonnement', 'actif', 'created_at'
+        ]
+        read_only_fields = ['id', 'created_at']
+
+    def validate_numero(self, value):
+        # Vérifier que le numéro n'est pas déjà utilisé
+        instance = self.instance
+        qs = LigneTelephonique.objects.filter(numero=value)
+        if instance:
+            qs = qs.exclude(pk=instance.pk)
+        if qs.exists():
+            raise serializers.ValidationError("Ce numéro est déjà utilisé.")
+        return value
+
+
+# ============================================================
 # PROFIL UTILISATEUR (lecture)
 # ============================================================
 class UtilisateurProfilSerializer(serializers.ModelSerializer):
 
     centre_nom = serializers.CharField(source='centre.nom', read_only=True)
+    lignes     = LigneTelephoniqueSerializer(many=True, read_only=True)
 
     class Meta:
         model  = Utilisateur
@@ -71,8 +96,9 @@ class UtilisateurProfilSerializer(serializers.ModelSerializer):
             'id', 'role', 'nom', 'prenom', 'email', 'telephone',
             'date_naissance', 'genre',
             'adresse_ligne1', 'adresse_ligne2', 'wilaya', 'commune', 'code_postal',
-            'type_client', 'num_contrat', 'type_abonnement', 'date_abonnement',
+            'type_client',
             'centre', 'centre_nom',
+            'lignes',
             'actif', 'email_verifie', 'tel_verifie',
             'created_at', 'derniere_connexion',
         ]

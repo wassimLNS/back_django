@@ -2,7 +2,14 @@ esque un client peut avoire plusieurs ligne
 comment creer des comptes pour les agents 
 comment faire pour les aitres types d'agents
 
-Auth
+------------------------------------------
+   PORTAIL ALGÉRIE TÉLÉCOM — ENDPOINTS & BODY POSTMAN
+------------------------------------------
+
+
+------------------------------------------
+ 🔐 AUTH & UTILISATEURS — http://127.0.0.1:8000/api/users/
+------------------------------------------
 
 POST   http://127.0.0.1:8000/api/users/login/client/
 Body:
@@ -16,8 +23,8 @@ Body:
 POST   http://127.0.0.1:8000/api/users/login/agent/
 Body:
 {
-    "email": "",
-    "mot_de_passe": ""
+    "email": "ton-email@gmail.com",
+    "mot_de_passe": "ton-mot-de-passe"
 }
 
 ----------------------------------------------------------------
@@ -78,8 +85,35 @@ GET    http://127.0.0.1:8000/api/users/connexions/
 
 ----------------------------------------------------------------
 
- 🏢 CENTRES — http://127.0.0.1:8000/api/centres/
+GET    http://127.0.0.1:8000/api/users/mes-lignes/
+POST   http://127.0.0.1:8000/api/users/mes-lignes/
+(token CLIENT)
+Body:
+{
+    "numero": "0561234568",
+    "type_abonnement": "ADSL",
+    "num_contrat": "AT-2024-002",
+    "date_abonnement": "2024-01-15"
+}
 
+----------------------------------------------------------------
+
+GET    http://127.0.0.1:8000/api/users/mes-lignes/{id}/
+
+PUT    http://127.0.0.1:8000/api/users/mes-lignes/{id}/
+(token CLIENT)
+Body:
+{
+    "type_abonnement": "Fibre",
+    "actif": true
+}
+
+DELETE http://127.0.0.1:8000/api/users/mes-lignes/{id}/
+
+
+------------------------------------------
+ 🏢 CENTRES — http://127.0.0.1:8000/api/centres/
+------------------------------------------
 
 GET    http://127.0.0.1:8000/api/centres/
 POST   http://127.0.0.1:8000/api/centres/
@@ -101,7 +135,7 @@ GET    http://127.0.0.1:8000/api/centres/{id}/
 PUT    http://127.0.0.1:8000/api/centres/{id}/
 Body:
 {
-    "nom": "Centre Oran Mise à jour",
+    "nom": "Centre Oran Mise a jour",
     "adresse": "Nouvelle adresse"
 }
 
@@ -125,9 +159,9 @@ Body:
 GET    http://127.0.0.1:8000/api/centres/mon-centre/
 
 
-----------------------------------------------------------------
+------------------------------------------
  🎫 TICKETS — http://127.0.0.1:8000/api/tickets/
-
+------------------------------------------
 
 GET    http://127.0.0.1:8000/api/tickets/types-service/
 
@@ -135,11 +169,12 @@ GET    http://127.0.0.1:8000/api/tickets/types-service/
 
 GET    http://127.0.0.1:8000/api/tickets/mes-tickets/
 POST   http://127.0.0.1:8000/api/tickets/mes-tickets/
+(token CLIENT)
 Body:
 {
     "type_service": 5,
     "titre": "Pas d'internet depuis ce matin",
-    "description": "Ma connexion ADSL est coupée depuis ce matin 8h, j'ai redémarré le modem plusieurs fois mais rien ne change."
+    "description": "Ma connexion ADSL est coupee depuis ce matin 8h, j'ai redemarré le modem plusieurs fois mais rien ne change."
 }
 
 ----------------------------------------------------------------
@@ -151,7 +186,7 @@ POST   http://127.0.0.1:8000/api/tickets/mes-tickets/{id}/
 Body:
 {
     "satisfaction_client": 4,
-    "commentaire_satisfaction": "Problème résolu rapidement, merci !"
+    "commentaire_satisfaction": "Probleme resolu rapidement, merci !"
 }
 
 ----------------------------------------------------------------
@@ -163,21 +198,21 @@ GET    http://127.0.0.1:8000/api/tickets/agent/mes-tickets/
 GET    http://127.0.0.1:8000/api/tickets/agent/mes-tickets/{id}/
 
 PUT    http://127.0.0.1:8000/api/tickets/agent/mes-tickets/{id}/
-
+(Changer statut — token AGENT)
 Body:
 {
     "statut": "resolu",
-    "resolution": "Le problème venait du modem, réinitialisé à distance."
+    "resolution": "Le probleme venait du modem, reinitialisé a distance."
 }
 
 ----------------------------------------------------------------
 
 POST   http://127.0.0.1:8000/api/tickets/agent/mes-tickets/{id}/escalader/
-
+(token AGENT)
 Body:
 {
     "type_escalade": "technique",
-    "motif": "Problème infrastructure, nécessite une intervention physique sur le central."
+    "motif": "Probleme infrastructure, necessite une intervention physique sur le central."
 }
 
 ----------------------------------------------------------------
@@ -194,7 +229,7 @@ GET    http://127.0.0.1:8000/api/tickets/admin/tous/?agent_id=uuid-de-lagent
 ----------------------------------------------------------------
 
 POST   http://127.0.0.1:8000/api/tickets/admin/{id}/attribuer/
-
+(token ADMIN)
 Body:
 {
     "agent_id": "uuid-de-lagent"
@@ -205,19 +240,19 @@ Body:
 POST   http://127.0.0.1:8000/api/tickets/{id}/pieces-jointes/
 (form-data — pas JSON !)
 Key: fichier
-Value: [sélectionner un fichier]
+Value: [selectionner un fichier]
 
 
-----------------------------------------------------------------
+------------------------------------------
  💬 CHAT — http://127.0.0.1:8000/api/chat/
-
+------------------------------------------
 
 GET    http://127.0.0.1:8000/api/chat/{ticket_id}/messages/
 
 POST   http://127.0.0.1:8000/api/chat/{ticket_id}/messages/
 Body:
 {
-    "contenu": "Bonjour, ma connexion est toujours coupée, pouvez-vous m'aider ?"
+    "contenu": "Bonjour, ma connexion est toujours coupee, pouvez-vous m'aider ?"
 }
 
 ----------------------------------------------------------------
@@ -230,12 +265,13 @@ WebSocket: ws://127.0.0.1:8000/ws/chat/{ticket_id}/
 (Envoyer un message via WebSocket)
 Body:
 {
-    "contenu": "Message en temps réel !"
+    "contenu": "Message en temps reel !"
 }
 
 
+------------------------------------------
  📧 NOTIFICATIONS — http://127.0.0.1:8000/api/notifications/
-----------------------------------------------------------------
+------------------------------------------
 
 GET    http://127.0.0.1:8000/api/notifications/historique/
 
@@ -243,15 +279,44 @@ POST   http://127.0.0.1:8000/api/notifications/tester/
 (Pas de body — juste le token ADMIN)
 
 
-
+------------------------------------------
  📊 RAPPORTS — http://127.0.0.1:8000/api/rapports/
-----------------------------------------------------------------
+------------------------------------------
 
 GET    http://127.0.0.1:8000/api/rapports/stats/
 GET    http://127.0.0.1:8000/api/rapports/performances/
 GET    http://127.0.0.1:8000/api/rapports/export/pdf/
 GET    http://127.0.0.1:8000/api/rapports/export/excel/
 
+
+-------------------------------------------------------------------------------------------------
+ 📝 NOTES IMPORTANTES
+------------------------------------------
+
+1. Pour tous les endpoints (sauf login) :
+   → Ajouter dans Headers :
+     Authorization: Bearer {access_token}
+
+2. Pour renouveler le token :
+   → POST http://127.0.0.1:8000/api/auth/token/refresh/
+   → Body: { "refresh": "ton-refresh-token" }
+
+3. Transitions de statut autorisees :
+   ouvert       → en_cours, rejete
+   en_cours     → resolu, escalade_technique, escalade_annexe, rejete
+   escalade_*   → resolu, ferme
+   resolu       → ferme
+
+4. Roles disponibles pour creer un agent :
+   "agent", "agent_technique", "agent_annexe"
+
+5. Pieces jointes → utiliser form-data (pas JSON)
+   Key: fichier | Value: [fichier]
+
+6. Lignes telephoniques → token CLIENT uniquement
+   Un client peut avoir plusieurs lignes (plusieurs maisons)
+
+------------------------------------------
 
 
  📝 NOTES IMPORTANTES
@@ -262,7 +327,7 @@ GET    http://127.0.0.1:8000/api/rapports/export/excel/
      Authorization: Bearer {access_token}
 
  access token jdid :
-   → POST http://127.0.0.1:8000/api/auth/token/refresh/
+   → POST http://127.0.0.1:8000http://127.0.0.1:8000/api/auth/token/refresh/
    → Body: { "refresh": "ton-refresh-token" }
 
 

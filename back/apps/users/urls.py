@@ -7,6 +7,8 @@ from .views import (
     AgentsView,
     AgentDetailView,
     HistoriqueConnexionsView,
+    LignesView,
+    LigneDetailView,
 )
 
 urlpatterns = [
@@ -24,4 +26,8 @@ urlpatterns = [
 
     # Historique connexions (admin)
     path('connexions/',     HistoriqueConnexionsView.as_view(), name='historique-connexions'),
+
+    # Lignes téléphoniques (client)
+    path('mes-lignes/',                     LignesView.as_view(),       name='mes-lignes'),
+    path('mes-lignes/<int:ligne_id>/',      LigneDetailView.as_view(),  name='ligne-detail'),
 ]

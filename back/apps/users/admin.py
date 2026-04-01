@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import Utilisateur, HistoriqueConnexion
+from .models import Utilisateur, HistoriqueConnexion, LigneTelephonique
 
 
 @admin.register(Utilisateur)
@@ -15,7 +15,7 @@ class UtilisateurAdmin(UserAdmin):
         ('Identité',         {'fields': ('nom', 'prenom', 'date_naissance', 'genre')}),
         ('Adresse',          {'fields': ('adresse_ligne1', 'adresse_ligne2', 'wilaya', 'commune', 'code_postal')}),
         ('Rôle & Centre',    {'fields': ('role', 'centre')}),
-        ('Infos Client',     {'fields': ('type_client', 'num_contrat', 'type_abonnement', 'date_abonnement')}),
+        ('Infos Client',     {'fields': ('type_client',)}),
         ('État',             {'fields': ('actif', 'is_active', 'is_staff', 'is_superuser', 'email_verifie', 'tel_verifie')}),
         ('Permissions',      {'fields': ('groups', 'user_permissions')}),
     )
@@ -34,3 +34,10 @@ class HistoriqueConnexionAdmin(admin.ModelAdmin):
     list_filter   = ['succes']
     search_fields = ['utilisateur__email', 'utilisateur__telephone']
     ordering      = ['-connecte_a']
+
+
+@admin.register(LigneTelephonique)
+class LigneTelephoniqueAdmin(admin.ModelAdmin):
+    list_display  = ['numero', 'client', 'type_abonnement', 'actif', 'created_at']
+    list_filter   = ['actif', 'type_abonnement']
+    search_fields = ['numero', 'client__nom', 'client__prenom']

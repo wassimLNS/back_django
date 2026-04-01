@@ -161,3 +161,27 @@ class HistoriqueConnexion(models.Model):
 
     def __str__(self):
         return f"{self.utilisateur} - {self.connecte_a}"
+    
+# ============================================================
+# LIGNES TÉLÉPHONIQUES DU CLIENT
+# ============================================================
+class LigneTelephonique(models.Model):
+
+    client = models.ForeignKey(
+        Utilisateur,
+        on_delete=models.CASCADE,
+        related_name='lignes'
+    )
+    numero           = models.CharField(max_length=20, unique=True)
+    type_abonnement  = models.CharField(max_length=50, null=True, blank=True)  # ADSL, Fibre, IDOOM...
+    num_contrat      = models.CharField(max_length=50, unique=True, null=True, blank=True)
+    date_abonnement  = models.DateField(null=True, blank=True)
+    actif            = models.BooleanField(default=True)
+    created_at       = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'lignes_telephoniques'
+        verbose_name = 'Ligne Téléphonique'
+
+    def __str__(self):
+        return f"{self.numero} ({self.client.prenom} {self.client.nom})"

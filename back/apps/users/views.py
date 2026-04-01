@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.utils import timezone
 
-from .models import Utilisateur, HistoriqueConnexion, Role
+from .models import Utilisateur, HistoriqueConnexion, Role, LigneTelephonique
 from .serializers import (
     LoginClientSerializer,
     LoginAgentSerializer,
@@ -14,8 +14,9 @@ from .serializers import (
     ModifierAgentSerializer,
     AgentListSerializer,
     HistoriqueConnexionSerializer,
+    LigneTelephoniqueSerializer,
 )
-from .permissions import EstAdmin
+from .permissions import EstAdmin, EstClient
 
 
 def get_tokens_for_user(user):
@@ -251,3 +252,58 @@ class HistoriqueConnexionsView(APIView):
 
         serializer = HistoriqueConnexionSerializer(historique, many=True)
         return Response(serializer.data)
+
+
+# ============================================================
+# LIGNES TÉLÉPHONIQUES (client)
+# ============================================================
+class LignesView(APIView):
+    permission_classes = [IsAuthenticated, EstClient]
+
+    def get(self, request):
+        """Liste des lignes téléphoniques du client connecté"""
+        lignes = LigneTelephonique.objects.filter(client=request.user, actif=True)
+        serializer = LigneTelephoniqueSerializer(lignes, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        """Ajouter une ligne téléphonique"""
+        serializer = LigneTelephoniqueSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(client=request.user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class LigneDetailView(APIView):
+    permission_classes = [IsAuthenticated, EstClient]
+
+    def get_ligne(self, ligne_id, client):
+        try:
+            return LigneTelephonique.objects.get(id=ligne_id, client=client)
+        except LigneTelephonique.DoesNotExist:
+            return None
+
+    def get(self, request, ligne_id):
+        ligne = self.get_ligne(ligne_id, request.user)
+        if not ligne:
+            return Response({'error': 'Ligne introuvable'}, status=status.HTTP_404_NOT_FOUND)
+        return Response(LigneTelephoniqueSerializer(ligne).data)
+
+    def put(self, request, ligne_id):
+        ligne = self.get_ligne(ligne_id, request.user)
+        if not ligne:
+            return Response({'error': 'Ligne introuvable'}, status=status.HTTP_404_NOT_FOUND)
+        serializer = LigneTelephoniqueSerializer(ligne, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, ligne_id):
+        ligne = self.get_ligne(ligne_id, request.user)
+        if not ligne:
+            return Response({'error': 'Ligne introuvable'}, status=status.HTTP_404_NOT_FOUND)
+        ligne.actif = False
+        ligne.save()
+        return Response({'message': 'Ligne désactivée avec succès'})
