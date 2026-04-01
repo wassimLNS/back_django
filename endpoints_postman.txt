@@ -1,0 +1,272 @@
+esque un client peut avoire plusieurs ligne 
+comment creer des comptes pour les agents 
+comment faire pour les aitres types d'agents
+
+Auth
+
+POST   http://127.0.0.1:8000/api/users/login/client/
+Body:
+{
+    "telephone": "0561234567",
+    "mot_de_passe": "client123"
+}
+
+----------------------------------------------------------------
+
+POST   http://127.0.0.1:8000/api/users/login/agent/
+Body:
+{
+    "email": "",
+    "mot_de_passe": ""
+}
+
+----------------------------------------------------------------
+
+POST   http://127.0.0.1:8000/api/users/logout/
+Body:
+{
+    "refresh": "ton-refresh-token"
+}
+
+----------------------------------------------------------------
+
+POST   http://127.0.0.1:8000/api/auth/token/refresh/
+Body:
+{
+    "refresh": "ton-refresh-token"
+}
+
+----------------------------------------------------------------
+
+GET    http://127.0.0.1:8000/api/users/me/
+PUT    http://127.0.0.1:8000/api/users/me/
+
+----------------------------------------------------------------
+
+GET    http://127.0.0.1:8000/api/users/agents/
+POST   http://127.0.0.1:8000/api/users/agents/
+Body:
+{
+    "nom": "Meziani",
+    "prenom": "Sofiane",
+    "email": "sofiane.meziani@at.dz",
+    "telephone": "0770123456",
+    "role": "agent",
+    "mot_de_passe": "agent123456"
+}
+
+----------------------------------------------------------------
+
+GET    http://127.0.0.1:8000/api/users/agents/{id}/
+
+PUT    http://127.0.0.1:8000/api/users/agents/{id}/
+Body:
+{
+    "nom": "Meziani",
+    "prenom": "Sofiane",
+    "email": "sofiane.meziani@at.dz",
+    "telephone": "0770123456",
+    "role": "agent",
+    "actif": true
+}
+
+DELETE http://127.0.0.1:8000/api/users/agents/{id}/
+
+----------------------------------------------------------------
+
+GET    http://127.0.0.1:8000/api/users/connexions/
+
+----------------------------------------------------------------
+
+ 🏢 CENTRES — http://127.0.0.1:8000/api/centres/
+
+
+GET    http://127.0.0.1:8000/api/centres/
+POST   http://127.0.0.1:8000/api/centres/
+Body:
+{
+    "code": "AT-ORAN-01",
+    "nom": "Centre Oran",
+    "wilaya": "Oran",
+    "adresse": "Rue Larbi Ben M'hidi, Oran",
+    "telephone": "041000001",
+    "email": "oran@at.dz",
+    "prefixes_tel": ["0551", "0552"]
+}
+
+----------------------------------------------------------------
+
+GET    http://127.0.0.1:8000/api/centres/{id}/
+
+PUT    http://127.0.0.1:8000/api/centres/{id}/
+Body:
+{
+    "nom": "Centre Oran Mise à jour",
+    "adresse": "Nouvelle adresse"
+}
+
+DELETE http://127.0.0.1:8000/api/centres/{id}/
+
+----------------------------------------------------------------
+
+GET    http://127.0.0.1:8000/api/centres/parametres/
+
+PUT    http://127.0.0.1:8000/api/centres/parametres/
+Body:
+{
+    "attribution_auto_active": true,
+    "sla_heures_normale": 48,
+    "sla_heures_haute": 24,
+    "sla_heures_critique": 4
+}
+
+----------------------------------------------------------------
+
+GET    http://127.0.0.1:8000/api/centres/mon-centre/
+
+
+----------------------------------------------------------------
+ 🎫 TICKETS — http://127.0.0.1:8000/api/tickets/
+
+
+GET    http://127.0.0.1:8000/api/tickets/types-service/
+
+----------------------------------------------------------------
+
+GET    http://127.0.0.1:8000/api/tickets/mes-tickets/
+POST   http://127.0.0.1:8000/api/tickets/mes-tickets/
+Body:
+{
+    "type_service": 5,
+    "titre": "Pas d'internet depuis ce matin",
+    "description": "Ma connexion ADSL est coupée depuis ce matin 8h, j'ai redémarré le modem plusieurs fois mais rien ne change."
+}
+
+----------------------------------------------------------------
+
+GET    http://127.0.0.1:8000/api/tickets/mes-tickets/{id}/
+
+POST   http://127.0.0.1:8000/api/tickets/mes-tickets/{id}/
+(Donner satisfaction — token CLIENT)
+Body:
+{
+    "satisfaction_client": 4,
+    "commentaire_satisfaction": "Problème résolu rapidement, merci !"
+}
+
+----------------------------------------------------------------
+
+GET    http://127.0.0.1:8000/api/tickets/agent/mes-tickets/
+
+----------------------------------------------------------------
+
+GET    http://127.0.0.1:8000/api/tickets/agent/mes-tickets/{id}/
+
+PUT    http://127.0.0.1:8000/api/tickets/agent/mes-tickets/{id}/
+
+Body:
+{
+    "statut": "resolu",
+    "resolution": "Le problème venait du modem, réinitialisé à distance."
+}
+
+----------------------------------------------------------------
+
+POST   http://127.0.0.1:8000/api/tickets/agent/mes-tickets/{id}/escalader/
+
+Body:
+{
+    "type_escalade": "technique",
+    "motif": "Problème infrastructure, nécessite une intervention physique sur le central."
+}
+
+----------------------------------------------------------------
+
+GET    http://127.0.0.1:8000/api/tickets/escalades/
+
+----------------------------------------------------------------
+
+GET    http://127.0.0.1:8000/api/tickets/admin/tous/
+GET    http://127.0.0.1:8000/api/tickets/admin/tous/?statut=ouvert
+GET    http://127.0.0.1:8000/api/tickets/admin/tous/?priorite=haute
+GET    http://127.0.0.1:8000/api/tickets/admin/tous/?agent_id=uuid-de-lagent
+
+----------------------------------------------------------------
+
+POST   http://127.0.0.1:8000/api/tickets/admin/{id}/attribuer/
+
+Body:
+{
+    "agent_id": "uuid-de-lagent"
+}
+
+----------------------------------------------------------------
+
+POST   http://127.0.0.1:8000/api/tickets/{id}/pieces-jointes/
+(form-data — pas JSON !)
+Key: fichier
+Value: [sélectionner un fichier]
+
+
+----------------------------------------------------------------
+ 💬 CHAT — http://127.0.0.1:8000/api/chat/
+
+
+GET    http://127.0.0.1:8000/api/chat/{ticket_id}/messages/
+
+POST   http://127.0.0.1:8000/api/chat/{ticket_id}/messages/
+Body:
+{
+    "contenu": "Bonjour, ma connexion est toujours coupée, pouvez-vous m'aider ?"
+}
+
+----------------------------------------------------------------
+
+GET    http://127.0.0.1:8000/api/chat/non-lus/
+
+----------------------------------------------------------------
+
+WebSocket: ws://127.0.0.1:8000/ws/chat/{ticket_id}/
+(Envoyer un message via WebSocket)
+Body:
+{
+    "contenu": "Message en temps réel !"
+}
+
+
+ 📧 NOTIFICATIONS — http://127.0.0.1:8000/api/notifications/
+----------------------------------------------------------------
+
+GET    http://127.0.0.1:8000/api/notifications/historique/
+
+POST   http://127.0.0.1:8000/api/notifications/tester/
+(Pas de body — juste le token ADMIN)
+
+
+
+ 📊 RAPPORTS — http://127.0.0.1:8000/api/rapports/
+----------------------------------------------------------------
+
+GET    http://127.0.0.1:8000/api/rapports/stats/
+GET    http://127.0.0.1:8000/api/rapports/performances/
+GET    http://127.0.0.1:8000/api/rapports/export/pdf/
+GET    http://127.0.0.1:8000/api/rapports/export/excel/
+
+
+
+ 📝 NOTES IMPORTANTES
+----------------------------------------------------------------
+
+ Pour tous les endpoints (sauf login) :
+   → Ajouter dans Headers :
+     Authorization: Bearer {access_token}
+
+ access token jdid :
+   → POST http://127.0.0.1:8000/api/auth/token/refresh/
+   → Body: { "refresh": "ton-refresh-token" }
+
+
+ Pièces jointes  utiliser form-data (pas JSON)
+   Key: fichier | Value: [fichier]
+
+
