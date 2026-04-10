@@ -85,8 +85,7 @@ class CreerTicketSerializer(serializers.ModelSerializer):
 
         agent_min = min(agents, key=lambda a: a.tickets_agent.filter(statut__in=['ouvert', 'en_cours']).count())
         ticket.agent = agent_min
-        ticket.statut = StatutTicket.EN_COURS
-        ticket.pris_en_charge_a = timezone.now()
+        # On garde le statut initial (SOUMIS) pour laisser au client le temps d'annuler s'il le souhaite
         ticket.attribution_auto = True
         ticket.save()
 

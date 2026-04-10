@@ -122,3 +122,106 @@ class MessagesNonLusView(APIView):
             ).exclude(expediteur_type__in=['agent', 'agent_technique', 'agent_annexe']).count()
 
         return Response({'messages_non_lus': count})
+
+
+# ============================================================
+# RÉSUMÉ IA DE LA DISCUSSION (pour agents technique/annexe)
+# ============================================================
+class ResumeIAView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, ticket_id):
+        """Génère un résumé intelligent de la discussion d'un ticket"""
+        try:
+            ticket = Ticket.objects.select_related('client', 'agent', 'type_service').get(id=ticket_id)
+        except Ticket.DoesNotExist:
+            return Response({'error': 'Ticket introuvable'}, status=status.HTTP_404_NOT_FOUND)
+
+        if not verifier_acces_ticket(request.user, ticket):
+            return Response({'error': 'Accès refusé'}, status=status.HTTP_403_FORBIDDEN)
+
+        messages = ticket.messages.all().order_by('created_at')
+        escalades = ticket.escalades.all().order_by('-created_at')
+
+        # Construire le résumé
+        client_name = f"{ticket.client.prenom} {ticket.client.nom}" if ticket.client else "Inconnu"
+        agent_name = f"{ticket.agent.prenom} {ticket.agent.nom}" if ticket.agent else "Non assigné"
+        service = ticket.type_service.libelle if ticket.type_service else "Non spécifié"
+
+        # Statistiques de la conversation
+        total_msgs = messages.count()
+        client_msgs = messages.filter(expediteur_type='client').count()
+        agent_msgs = total_msgs - client_msgs
+
+        # Timeline résumée
+        timeline = []
+        timeline.append(f"📋 Ticket {ticket.numero_ticket} créé le {ticket.created_at.strftime('%d/%m/%Y à %H:%M')}")
+        timeline.append(f"👤 Client : {client_name} ({ticket.client.telephone or 'N/A'})")
+        timeline.append(f"🔧 Service : {service}")
+        timeline.append(f"⚡ Priorité : {ticket.priorite.upper()}")
+
+        if ticket.agent:
+            timeline.append(f"👨‍💼 Agent initial : {agent_name}")
+
+        if ticket.pris_en_charge_a:
+            timeline.append(f"⏱️ Pris en charge le {ticket.pris_en_charge_a.strftime('%d/%m/%Y à %H:%M')}")
+
+        # Résumé des escalades
+        for esc in escalades:
+            source = f"{esc.agent_source.prenom} {esc.agent_source.nom}" if esc.agent_source else "Inconnu"
+            timeline.append(f"🔺 Escalade {esc.type_escalade} par {source} — Motif : {esc.motif}")
+
+        # Extraire les messages clés (premier, dernier du client, dernier de l'agent)
+        key_messages = []
+        if messages.exists():
+            first_msg = messages.first()
+            key_messages.append({
+                'role': first_msg.expediteur_type,
+                'contenu': first_msg.contenu[:200],
+                'date': first_msg.created_at.strftime('%d/%m %H:%M'),
+                'label': 'Premier message'
+            })
+
+            last_client_msg = messages.filter(expediteur_type='client').last()
+            if last_client_msg and last_client_msg.id != first_msg.id:
+                key_messages.append({
+                    'role': 'client',
+                    'contenu': last_client_msg.contenu[:200],
+                    'date': last_client_msg.created_at.strftime('%d/%m %H:%M'),
+                    'label': 'Dernier message client'
+                })
+
+            last_agent_msg = messages.exclude(expediteur_type='client').last()
+            if last_agent_msg:
+                key_messages.append({
+                    'role': last_agent_msg.expediteur_type,
+                    'contenu': last_agent_msg.contenu[:200],
+                    'date': last_agent_msg.created_at.strftime('%d/%m %H:%M'),
+                    'label': 'Dernière réponse agent'
+                })
+
+        # Génération du résumé textuel
+        summary_parts = [
+            f"Le client {client_name} a signalé un problème de type « {service} » (priorité {ticket.priorite}).",
+        ]
+        if ticket.description:
+            summary_parts.append(f"Description initiale : « {ticket.description[:300]} »")
+        summary_parts.append(f"La conversation contient {total_msgs} messages ({client_msgs} du client, {agent_msgs} de l'équipe support).")
+
+        if escalades.exists():
+            esc = escalades.first()
+            summary_parts.append(f"Le ticket a été escaladé en {esc.type_escalade} avec le motif : « {esc.motif} »")
+
+        summary_text = " ".join(summary_parts)
+
+        return Response({
+            'resume': summary_text,
+            'timeline': timeline,
+            'messages_cles': key_messages,
+            'stats': {
+                'total_messages': total_msgs,
+                'messages_client': client_msgs,
+                'messages_agent': agent_msgs,
+                'duree_jours': (timezone.now() - ticket.created_at).days if ticket.created_at else 0,
+            }
+        })

@@ -9,6 +9,7 @@ from .views import (
     HistoriqueConnexionsView,
     LignesView,
     LigneDetailView,
+    HistoriqueConnexionsClientsView,
 )
 
 urlpatterns = [
@@ -26,6 +27,7 @@ urlpatterns = [
 
     # Historique connexions (admin)
     path('connexions/',     HistoriqueConnexionsView.as_view(), name='historique-connexions'),
+    path('clients/connexions/', HistoriqueConnexionsClientsView.as_view(), name='historique-connexions-clients'),
 
     # Lignes téléphoniques (client)
     path('mes-lignes/',                     LignesView.as_view(),       name='mes-lignes'),

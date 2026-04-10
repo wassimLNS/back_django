@@ -1,0 +1,24 @@
+{
+  "login": {
+    "brand": "اتصالات الجزائر",
+    "tagline": "البوابة الوطنية للمساعدة",
+    "phone_label": "رقم الخط الثابت / 4G",
+    "phone_placeholder": "مثال: 021XXXXXXX",
+    "password_label": "كلمة المرور (رمز العميل)",
+    "submit_client": "تسجيل الدخول إلى البوابة",
+    "submit_client_ar": "تسجيل الدخول إلى البوابة",
+    "error_empty": "يرجى ملء جميع الحقول.",
+    "error_invalid": "بيانات الاعتماد غير صالحة.",
+    "staff_prompt": "هل أنت موظف؟",
+    "staff_link": "دخول الموظفين"
+  },
+  "staff_login": {
+    "tagline": "دخول الموظفين — البوابة الداخلية",
+    "email_label": "البريد الإلكتروني المهني",
+    "email_placeholder": "nom@at.dz",
+    "submit": "دخول الموظفين",
+    "submit_ar": "دخول الموظفين",
+    "client_prompt": "هل أنت مشترك؟",
+    "client_link": "تسجيل دخول المشترك"
+  }
+}

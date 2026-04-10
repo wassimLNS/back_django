@@ -1,6 +1,4 @@
-esque un client peut avoire plusieurs ligne 
-comment creer des comptes pour les agents 
-comment faire pour les aitres types d'agents
+
 
 ------------------------------------------
    PORTAIL ALGÉRIE TÉLÉCOM — ENDPOINTS & BODY POSTMAN
@@ -81,8 +79,8 @@ DELETE http://127.0.0.1:8000/api/users/agents/{id}/
 
 ----------------------------------------------------------------
 
-GET    http://127.0.0.1:8000/api/users/connexions/
-
+GET    http://127.0.0.1:8000/api/users/connexions/         AdminHistorique connexions agents
+GET    http://127.0.0.1:8000/api/users/clients/connexions/ Agent + Admin Historique connexions clients
 ----------------------------------------------------------------
 
 GET    http://127.0.0.1:8000/api/users/mes-lignes/
@@ -188,6 +186,11 @@ Body:
     "satisfaction_client": 4,
     "commentaire_satisfaction": "Probleme resolu rapidement, merci !"
 }
+
+----------------------------------------------------------------
+
+DELETE http://127.0.0.1:8000/api/tickets/mes-tickets/{id}/
+(token CLIENT — Supprimer le ticket, uniquement si statut = "soumis")
 
 ----------------------------------------------------------------
 
@@ -302,6 +305,7 @@ GET    http://127.0.0.1:8000/api/rapports/export/excel/
    → Body: { "refresh": "ton-refresh-token" }
 
 3. Transitions de statut autorisees :
+   soumis       → ouvert, rejete, (suppression par le client si souhaité)
    ouvert       → en_cours, rejete
    en_cours     → resolu, escalade_technique, escalade_annexe, rejete
    escalade_*   → resolu, ferme

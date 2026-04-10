@@ -16,7 +16,7 @@ from .serializers import (
     HistoriqueConnexionSerializer,
     LigneTelephoniqueSerializer,
 )
-from .permissions import EstAdmin, EstClient
+from .permissions import EstAdmin, EstClient, EstAgentOuPlus
 
 
 def get_tokens_for_user(user):
@@ -241,14 +241,41 @@ class HistoriqueConnexionsView(APIView):
     permission_classes = [IsAuthenticated, EstAdmin]
 
     def get(self, request):
-        """Historique des connexions des agents du centre"""
-        agents_ids = Utilisateur.objects.filter(
-            centre=request.user.centre
-        ).values_list('id', flat=True)
+        """Historique des connexions des utilisateurs (staff+clients) liés au centre"""
+        users = Utilisateur.objects.filter(centre=request.user.centre)
+        
+        # Filtre par rôle : 'client' ou 'staff' (tout ce qui n'est pas client)
+        role_filter = request.query_params.get('role', 'all')
+        if role_filter == 'clients':
+            users = users.filter(role='client')
+        elif role_filter == 'staff':
+            users = users.exclude(role='client')
+            
+        users_ids = users.values_list('id', flat=True)
 
         historique = HistoriqueConnexion.objects.filter(
-            utilisateur_id__in=agents_ids
-        ).order_by('-connecte_a')[:100]
+            utilisateur_id__in=users_ids
+        )
+
+        search = request.query_params.get('search')
+        start_date = request.query_params.get('start_date')
+        end_date = request.query_params.get('end_date')
+
+        if search:
+            from django.db.models import Q
+            historique = historique.filter(
+                Q(utilisateur__nom__icontains=search) | 
+                Q(utilisateur__prenom__icontains=search) | 
+                Q(utilisateur__email__icontains=search) |
+                Q(ip_adresse__icontains=search)
+            )
+        
+        if start_date:
+            historique = historique.filter(connecte_a__gte=start_date + 'T00:00:00Z')
+        if end_date:
+            historique = historique.filter(connecte_a__lte=end_date + 'T23:59:59Z')
+
+        historique = historique.order_by('-connecte_a')[:200]
 
         serializer = HistoriqueConnexionSerializer(historique, many=True)
         return Response(serializer.data)
@@ -307,3 +334,23 @@ class LigneDetailView(APIView):
         ligne.actif = False
         ligne.save()
         return Response({'message': 'Ligne désactivée avec succès'})
+    
+# ============================================================
+# HISTORIQUE CONNEXIONS CLIENTS (agent + admin)
+# ============================================================
+class HistoriqueConnexionsClientsView(APIView):
+    permission_classes = [IsAuthenticated, EstAgentOuPlus]
+
+    def get(self, request):
+        """Historique des connexions des clients du centre"""
+        clients_ids = Utilisateur.objects.filter(
+            centre=request.user.centre,
+            role='client'
+        ).values_list('id', flat=True)
+
+        historique = HistoriqueConnexion.objects.filter(
+            utilisateur_id__in=clients_ids
+        ).order_by('-connecte_a')[:100]
+
+        serializer = HistoriqueConnexionSerializer(historique, many=True)
+        return Response(serializer.data)

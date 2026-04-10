@@ -24,6 +24,20 @@ class StatsGeneralesView(APIView):
 
         tickets = Ticket.objects.filter(centre=centre)
 
+        service = request.query_params.get('service')
+        agent_id = request.query_params.get('agent_id')
+        start_date = request.query_params.get('start_date')
+        end_date = request.query_params.get('end_date')
+
+        if service:
+            tickets = tickets.filter(type_service__libelle__iexact=service)
+        if agent_id:
+            tickets = tickets.filter(agent__id=agent_id)
+        if start_date:
+            tickets = tickets.filter(created_at__gte=start_date + 'T00:00:00Z')
+        if end_date:
+            tickets = tickets.filter(created_at__lte=end_date + 'T23:59:59Z')
+
         # Stats globales
         total           = tickets.count()
         ouverts         = tickets.filter(statut='ouvert').count()
@@ -89,15 +103,29 @@ class PerformancesAgentsView(APIView):
         if not centre:
             return Response({'error': 'Pas de centre associé'})
 
+        service = request.query_params.get('service')
+        agent_id = request.query_params.get('agent_id')
+        start_date = request.query_params.get('start_date')
+        end_date = request.query_params.get('end_date')
+
         agents = Utilisateur.objects.filter(
             centre=centre,
             role__in=['agent', 'agent_technique', 'agent_annexe'],
             actif=True
         )
+        if agent_id:
+            agents = agents.filter(id=agent_id)
 
         performances = []
         for agent in agents:
             tickets = Ticket.objects.filter(agent=agent)
+            if service:
+                tickets = tickets.filter(type_service__libelle__iexact=service)
+            if start_date:
+                tickets = tickets.filter(created_at__gte=start_date + 'T00:00:00Z')
+            if end_date:
+                tickets = tickets.filter(created_at__lte=end_date + 'T23:59:59Z')
+            
             total   = tickets.count()
 
             resolus  = tickets.filter(statut__in=['resolu', 'ferme']).count()

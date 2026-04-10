@@ -1,0 +1,24 @@
+{
+  "login": {
+    "brand": "Algérie Télécom",
+    "tagline": "National Assistance Portal",
+    "phone_label": "Fixed Line / 4G Number",
+    "phone_placeholder": "Ex: 021XXXXXXX",
+    "password_label": "Password (Client Code)",
+    "submit_client": "Portal Login",
+    "submit_client_ar": "تسجيل الدخول إلى البوابة",
+    "error_empty": "Please fill in all fields.",
+    "error_invalid": "Invalid credentials.",
+    "staff_prompt": "Are you staff?",
+    "staff_link": "AT Staff Access"
+  },
+  "staff_login": {
+    "tagline": "Staff Access — Internal Portal",
+    "email_label": "Corporate Email",
+    "email_placeholder": "name@at.dz",
+    "submit": "Staff Access",
+    "submit_ar": "دخول الموظفين",
+    "client_prompt": "Are you a subscriber?",
+    "client_link": "Subscriber Login"
+  }
+}

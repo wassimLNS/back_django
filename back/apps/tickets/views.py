@@ -57,6 +57,15 @@ class MonTicketDetailView(APIView):
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    def delete(self, request, ticket_id):
+        ticket = self.get_ticket(ticket_id, request.user)
+        if not ticket:
+            return Response({'error': 'Ticket introuvable'}, status=status.HTTP_404_NOT_FOUND)
+        if ticket.statut != 'soumis':
+            return Response({'error': 'Seuls les tickets non ouverts (soumis) peuvent être supprimés.'}, status=status.HTTP_400_BAD_REQUEST)
+        ticket.delete()
+        return Response({'message': 'Ticket supprimé avec succès.'}, status=status.HTTP_204_NO_CONTENT)
+
 
 class MesTicketsAgentView(APIView):
     permission_classes = [IsAuthenticated, EstAgent]
@@ -97,9 +106,9 @@ class TicketsEscaladesView(APIView):
 
     def get(self, request):
         if request.user.role == 'agent_technique':
-            tickets = Ticket.objects.filter(agent_technique=request.user).order_by('-created_at')
+            tickets = Ticket.objects.filter(centre=request.user.centre, statut='escalade_technique').order_by('-created_at')
         else:
-            tickets = Ticket.objects.filter(agent_annexe=request.user).order_by('-created_at')
+            tickets = Ticket.objects.filter(centre=request.user.centre, statut='escalade_annexe').order_by('-created_at')
         return Response(TicketListSerializer(tickets, many=True).data)
 
 
@@ -108,15 +117,26 @@ class TousLesTicketsView(APIView):
 
     def get(self, request):
         tickets = Ticket.objects.filter(centre=request.user.centre).order_by('-created_at')
-        statut   = request.query_params.get('statut')
+        statut = request.query_params.get('statut')
         priorite = request.query_params.get('priorite')
         agent_id = request.query_params.get('agent_id')
+        service = request.query_params.get('service')
+        start_date = request.query_params.get('start_date')
+        end_date = request.query_params.get('end_date')
+
         if statut:
             tickets = tickets.filter(statut=statut)
         if priorite:
             tickets = tickets.filter(priorite=priorite)
         if agent_id:
             tickets = tickets.filter(agent__id=agent_id)
+        if service:
+            tickets = tickets.filter(type_service__libelle__iexact=service)
+        if start_date:
+            tickets = tickets.filter(created_at__gte=start_date + 'T00:00:00Z')
+        if end_date:
+            tickets = tickets.filter(created_at__lte=end_date + 'T23:59:59Z')
+
         return Response(TicketListSerializer(tickets, many=True).data)
 
 
@@ -161,6 +181,21 @@ class PiecesJointesView(APIView):
             serializer.save(ticket=ticket, uploaded_by=request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class PieceJointeDownloadView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, piece_id):
+        try:
+            piece = PieceJointe.objects.get(id=piece_id)
+        except PieceJointe.DoesNotExist:
+            return Response({'error': 'Fichier introuvable'}, status=status.HTTP_404_NOT_FOUND)
+
+        from django.http import HttpResponse
+        response = HttpResponse(bytes(piece.contenu), content_type=piece.type_mime)
+        response['Content-Disposition'] = f'inline; filename="{piece.nom_fichier}"'
+        return response
 
 
 class EscaladerTicketView(APIView):

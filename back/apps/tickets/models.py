@@ -6,6 +6,7 @@ import uuid
 # CHOICES
 # ============================================================
 class StatutTicket(models.TextChoices):
+    SOUMIS              = 'soumis',               'Soumis'
     OUVERT              = 'ouvert',               'Ouvert'
     EN_COURS            = 'en_cours',             'En cours'
     ESCALADE_TECHNIQUE  = 'escalade_technique',   'Escaladé - Technique'
@@ -93,7 +94,7 @@ class Ticket(models.Model):
         related_name='tickets'
     )
     priorite = models.CharField(max_length=10, choices=PrioriteTicket.choices, default=PrioriteTicket.NORMALE)
-    statut   = models.CharField(max_length=25, choices=StatutTicket.choices, default=StatutTicket.OUVERT)
+    statut   = models.CharField(max_length=25, choices=StatutTicket.choices, default=StatutTicket.SOUMIS)
 
     # --- Contenu ---
     titre       = models.CharField(max_length=255)

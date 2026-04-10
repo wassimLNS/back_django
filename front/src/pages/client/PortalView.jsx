@@ -1,0 +1,120 @@
+import React, { useState, useEffect, useContext } from 'react';
+import { AuthContext } from '@/contexts/AuthContext';
+import { getMyTickets, getTicketDetail } from '@/api/tickets';
+import { getMessages, sendMessage as sendMessageAPI } from '@/api/chat';
+import { NewTicketForm } from '@/components/features/portal/NewTicketForm';
+import { CustomerTicketList } from '@/components/features/portal/CustomerTicketList';
+import { CustomerChatDrawer } from '@/components/features/portal/CustomerChatDrawer';
+import { Button } from '@/components/ui/button';
+import './portal-view.css';
+
+export default function PortalView() {
+  const { user } = useContext(AuthContext);
+  const [activeTab, setActiveTab] = useState('new');
+  const [tickets, setTickets] = useState([]);
+  const [selectedTicket, setSelectedTicket] = useState(null);
+  const [chatMessages, setChatMessages] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const userPhone = user?.telephone || '';
+
+  // Fetch tickets from API
+  const fetchTickets = async () => {
+    setLoading(true);
+    try {
+      const data = await getMyTickets();
+      // data may be paginated: { results: [...], count, ... }
+      setTickets(data.results || data);
+    } catch (err) {
+      console.error('Failed to fetch tickets:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTickets();
+  }, []);
+
+  // When a ticket is selected, fetch full details + chat messages
+  const handleSelectTicket = async (ticket) => {
+    try {
+      // Fetch full ticket detail (includes type_service, description, pieces_jointes)
+      const fullTicket = await getTicketDetail(ticket.id);
+      setSelectedTicket(fullTicket);
+    } catch (err) {
+      console.error('Failed to fetch ticket detail:', err);
+      setSelectedTicket(ticket); // Fallback to list data
+    }
+
+    try {
+      const msgs = await getMessages(ticket.id);
+      setChatMessages(msgs.results || msgs);
+    } catch (err) {
+      console.error('Failed to fetch messages:', err);
+      setChatMessages([]);
+    }
+  };
+
+  const handleSendMessage = async (text) => {
+    if (!selectedTicket) return;
+    try {
+      const newMsg = await sendMessageAPI(selectedTicket.id, text);
+      setChatMessages(prev => [...prev, newMsg]);
+    } catch (err) {
+      console.error('Failed to send message:', err);
+    }
+  };
+
+  const handleTicketCreated = () => {
+    setActiveTab('history');
+    fetchTickets();
+  };
+
+  return (
+    <div className="portal-view-container">
+      <div className="portal-header">
+        <div className="portal-title-group">
+          <h1 className="portal-main-title">AT-Customer_Support Citoyen</h1>
+          <p className="portal-subtitle">Espace Assistance Officiel</p>
+        </div>
+        <div className="portal-tabs-nav">
+          <Button
+            variant={activeTab === 'new' ? 'default' : 'ghost'}
+            className={`portal-tab-btn ${activeTab === 'new' ? 'active' : ''}`}
+            onClick={() => setActiveTab('new')}
+          >
+            Nouveau Ticket
+          </Button>
+          <Button
+            variant={activeTab === 'history' ? 'default' : 'ghost'}
+            className={`portal-tab-btn ${activeTab === 'history' ? 'active' : ''}`}
+            onClick={() => setActiveTab('history')}
+          >
+            Suivi Tickets
+          </Button>
+        </div>
+      </div>
+
+      <div className="portal-content-wrapper">
+        {activeTab === 'new' ? (
+          <NewTicketForm userPhone={userPhone} onSubmit={handleTicketCreated} />
+        ) : (
+          <CustomerTicketList
+            tickets={tickets}
+            loading={loading}
+            onSelectTicket={handleSelectTicket}
+          />
+        )}
+      </div>
+
+      <CustomerChatDrawer
+        ticket={selectedTicket}
+        messages={chatMessages}
+        onClose={() => { setSelectedTicket(null); setChatMessages([]); }}
+        onSendMessage={handleSendMessage}
+        onTicketDeleted={() => { setSelectedTicket(null); setChatMessages([]); fetchTickets(); }}
+      />
+    </div>
+  );
+}

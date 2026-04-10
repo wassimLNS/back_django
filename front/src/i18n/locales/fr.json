@@ -1,0 +1,24 @@
+{
+  "login": {
+    "brand": "Algérie Télécom",
+    "tagline": "Portail National d'Assistance",
+    "phone_label": "N° de Ligne Fixe / 4G",
+    "phone_placeholder": "Ex: 021XXXXXXX",
+    "password_label": "Mot de passe (Code Client)",
+    "submit_client": "Connexion Portail",
+    "submit_client_ar": "تسجيل الدخول إلى البوابة",
+    "error_empty": "Veuillez remplir tous les champs.",
+    "error_invalid": "Identifiants invalides.",
+    "staff_prompt": "Vous êtes staff ?",
+    "staff_link": "Accès Staff AT"
+  },
+  "staff_login": {
+    "tagline": "Accès Staff — Portail Interne",
+    "email_label": "Email Corporatif",
+    "email_placeholder": "nom@at.dz",
+    "submit": "Accès Staff",
+    "submit_ar": "دخول الموظفين",
+    "client_prompt": "Vous êtes abonné ?",
+    "client_link": "Connexion Abonné"
+  }
+}
