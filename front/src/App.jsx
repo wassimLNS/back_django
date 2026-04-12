@@ -18,6 +18,10 @@ import WorkspaceView from './pages/agent/WorkspaceView';
 // Pages - Admin
 import AdminView from './pages/admin/AdminView';
 
+// Pages - Errors
+import NotFound from './pages/errors/NotFound';
+import Unauthorized from './pages/errors/Unauthorized';
+
 function App() {
   return (
     <Router>
@@ -70,6 +74,10 @@ function App() {
             </DashboardLayout>
           </RoleRoute>
         } />
+
+        {/* Error Pages */}
+        <Route path="/unauthorized" element={<Unauthorized />} />
+        <Route path="*" element={<NotFound />} />
 
       </Routes>
     </Router>

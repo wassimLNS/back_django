@@ -9,19 +9,18 @@ const RoleRoute = ({ children, allowedRoles }) => {
     return <div>Loading...</div>;
   }
 
-  if (!user || !allowedRoles.includes(user.role)) {
-    // If logged in but wrong role, redirect to their correct dashboard
-    if (user) {
-      if (user.role === 'client') return <Navigate to="/client/dashboard" replace />;
-      if (user.role === 'agent') return <Navigate to="/agent/dashboard" replace />;
-      if (user.role === 'agent_technique') return <Navigate to="/technique/dashboard" replace />;
-      if (user.role === 'agent_annexe') return <Navigate to="/annexe/dashboard" replace />;
-      if (user.role === 'admin') return <Navigate to="/admin/dashboard" replace />;
-    }
+  // Not logged in → go to login
+  if (!user) {
     return <Navigate to="/" replace />;
+  }
+
+  // Logged in but wrong role → show 403
+  if (!allowedRoles.includes(user.role)) {
+    return <Navigate to="/unauthorized" replace />;
   }
 
   return children;
 };
 
 export default RoleRoute;
+

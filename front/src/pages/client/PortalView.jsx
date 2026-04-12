@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
+import { useTranslation } from 'react-i18next';
 import { AuthContext } from '@/contexts/AuthContext';
 import { getMyTickets, getTicketDetail } from '@/api/tickets';
 import { getMessages, sendMessage as sendMessageAPI } from '@/api/chat';
@@ -10,6 +11,7 @@ import './portal-view.css';
 
 export default function PortalView() {
   const { user } = useContext(AuthContext);
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('new');
   const [tickets, setTickets] = useState([]);
   const [selectedTicket, setSelectedTicket] = useState(null);
@@ -75,8 +77,8 @@ export default function PortalView() {
     <div className="portal-view-container">
       <div className="portal-header">
         <div className="portal-title-group">
-          <h1 className="portal-main-title">AT-Customer_Support Citoyen</h1>
-          <p className="portal-subtitle">Espace Assistance Officiel</p>
+          <h1 className="portal-main-title">{t('portal.title')}</h1>
+          <p className="portal-subtitle">{t('login.tagline')}</p>
         </div>
         <div className="portal-tabs-nav">
           <Button
@@ -84,14 +86,14 @@ export default function PortalView() {
             className={`portal-tab-btn ${activeTab === 'new' ? 'active' : ''}`}
             onClick={() => setActiveTab('new')}
           >
-            Nouveau Ticket
+            {t('portal.new_ticket')}
           </Button>
           <Button
             variant={activeTab === 'history' ? 'default' : 'ghost'}
             className={`portal-tab-btn ${activeTab === 'history' ? 'active' : ''}`}
             onClick={() => setActiveTab('history')}
           >
-            Suivi Tickets
+            {t('portal.status')}
           </Button>
         </div>
       </div>

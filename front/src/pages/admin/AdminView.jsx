@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { AuthContext } from '@/contexts/AuthContext';
 import { getAdminStats, getAgentsPerformance, getAgentsList, getAllTickets, exportPDF, exportExcel, getSessionHistory } from '@/api/admin';
 import { AdminOverview } from '@/components/features/admin/AdminOverview';
@@ -12,6 +13,7 @@ import { cn } from '@/lib/utils';
 
 export default function AdminView() {
   const { user } = useContext(AuthContext);
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const activeTab = searchParams.get('tab') || 'stats';
   const [stats, setStats] = useState(null);
@@ -131,7 +133,7 @@ export default function AdminView() {
           <div className="relative flex-1 xl:w-64 min-w-[200px]">
             <Search className="absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
             <input
-              placeholder="Réf / Client / Expert…"
+              placeholder={t('admin.search_placeholder')}
               className="pl-12 h-12 w-full rounded-2xl text-xs font-bold bg-slate-50/50 border border-slate-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0055A4]/20 transition-all shadow-inner"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -143,7 +145,7 @@ export default function AdminView() {
             <div className="flex items-center gap-2">
               <select value={filterService} onChange={(e) => setFilterService(e.target.value)}
                 className="h-12 min-w-[12rem] text-[10px] font-black uppercase rounded-2xl shadow-sm bg-white border border-slate-200 px-4 focus:outline-none focus:ring-2 focus:ring-[#0055A4]/20 cursor-pointer">
-                <option value="all">Tous Services</option>
+                <option value="all">{t('portal.all')}</option>
                 {serviceTypes.map(t => <option key={t} value={t}>{t}</option>)}
               </select>
             </div>
@@ -154,14 +156,14 @@ export default function AdminView() {
             {activeTab === 'sessions' ? (
               <select value={filterAgent} onChange={(e) => setFilterAgent(e.target.value)}
                 className="h-12 min-w-[12rem] text-[10px] font-black uppercase rounded-2xl shadow-sm bg-white border border-slate-200 px-4 focus:outline-none focus:ring-2 focus:ring-[#0055A4]/20 cursor-pointer">
-                <option value="all">Tous Utilisateurs</option>
+                <option value="all">{t('portal.all')}</option>
                 <option value="clients">Clients</option>
                 <option value="staff">Staff (Experts, Admins...)</option>
               </select>
             ) : (
               <select value={filterAgent} onChange={(e) => setFilterAgent(e.target.value)}
                 className="h-12 min-w-[12rem] text-[10px] font-black uppercase rounded-2xl shadow-sm bg-white border border-slate-200 px-4 focus:outline-none focus:ring-2 focus:ring-[#0055A4]/20 cursor-pointer">
-                <option value="all">Tous Experts</option>
+                <option value="all">{t('sidebar.experts')}</option>
                 {agents.map(a => <option key={a.id} value={a.id}>{a.prenom} {a.nom}</option>)}
               </select>
             )}
@@ -193,14 +195,14 @@ export default function AdminView() {
                 className="flex items-center gap-2 h-10 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest text-[#0055A4] bg-[#0055A4]/5 hover:bg-[#0055A4]/10 transition-colors"
               >
                 {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
-                Rapport PDF
+                {t('admin.export_pdf')}
               </button>
               <button 
                 onClick={handleExportExcel} disabled={exporting}
                 className="flex items-center gap-2 h-10 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 hover:bg-emerald-100 transition-colors"
               >
                 {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileSpreadsheet className="w-4 h-4" />}
-                Export Excel
+                {t('admin.export_excel')}
               </button>
             </div>
           )}
@@ -208,11 +210,11 @@ export default function AdminView() {
           {/* Assignment mode toggle */}
           <div className="flex items-center gap-4 pl-6 border-l h-12">
             <div className="text-right">
-              <label className="text-[9px] font-black uppercase text-slate-400 block tracking-widest">Attribution Auto</label>
+              <label className="text-[9px] font-black uppercase text-slate-400 block tracking-widest">{t('admin.auto_assign')}</label>
               <p className={cn("text-[10px] font-black mt-0.5",
                 assignmentMode === 'auto' ? "text-emerald-600" : "text-amber-500"
               )}>
-                {assignmentMode === 'auto' ? 'ACTIVÉE' : 'MANUELLE'}
+                {assignmentMode === 'auto' ? t('admin.enabled') : t('admin.manual')}
               </p>
             </div>
             <button

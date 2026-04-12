@@ -78,6 +78,22 @@
   @apply w-4 h-4;
 }
 
+/* ─── Language Switcher in Sidebar ─── */
+.sidebar .language-switcher {
+  @apply flex items-center justify-center gap-1 px-4 py-2;
+}
+.sidebar .language-switcher button {
+  @apply px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider
+         text-slate-400 bg-transparent border border-transparent
+         cursor-pointer transition-all;
+}
+.sidebar .language-switcher button:hover {
+  @apply text-slate-600 bg-slate-50;
+}
+.sidebar .language-switcher button.active {
+  @apply text-[#0055A4] bg-[#0055A4]/10 border-[#0055A4]/20;
+}
+
 /* ─── Main Content Area ─── */
 .dashboard-main {
   @apply flex-1 ml-56;

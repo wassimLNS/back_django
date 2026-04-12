@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -8,6 +9,7 @@ import { getServiceTypes, createTicket, uploadAttachment } from '@/api/tickets';
 import { Loader2, Phone, Search, CheckCircle2, FileUp, X } from 'lucide-react';
 
 export function NewTicketForm({ userPhone, onSubmit }) {
+  const { t } = useTranslation();
   const [serviceTypes, setServiceTypes] = useState([]);
   const [typeService, setTypeService] = useState('');
   const [titre, setTitre] = useState('');
@@ -107,10 +109,10 @@ export function NewTicketForm({ userPhone, onSubmit }) {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {/* Service Type Select */}
             <div className="space-y-2">
-              <Label className="text-[10px] font-black uppercase text-slate-500">Service Impacté</Label>
+              <Label className="text-[10px] font-black uppercase text-slate-500">{t('ticket_form.service_label')}</Label>
               <Select onValueChange={setTypeService} required>
                 <SelectTrigger className="h-12 rounded-xl border-slate-200 font-bold">
-                  <SelectValue placeholder="Choisir un service" />
+                  <SelectValue placeholder={t('ticket_form.service_label')} />
                 </SelectTrigger>
                 <SelectContent className="rounded-xl shadow-2xl">
                   {serviceTypes.map(t => (
@@ -137,35 +139,36 @@ export function NewTicketForm({ userPhone, onSubmit }) {
           {/* Location card */}
           <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 shadow-sm relative">
             <Label className="text-[10px] font-black uppercase text-slate-500 flex items-center gap-2">
-              <Search className="w-3.5 h-3.5" /> Localisation Détectée
+              <Search className="w-3.5 h-3.5" /> {t('portal.service')}
             </Label>
             <div className="mt-3">
               <p className="text-base font-black text-slate-900 leading-none">Algérie Télécom — Zone Client</p>
-              <p className="text-[11px] font-black text-[#0055A4] uppercase mt-1">Détection automatique</p>
+              <p className="text-base font-black text-slate-900 leading-none">{t('portal.at_zone')}</p>
+              <p className="text-[11px] font-black text-[#0055A4] uppercase mt-1">{t('portal.auto_detection')}</p>
             </div>
           </div>
 
           {/* Description */}
           <div className="space-y-2">
-            <Label className="text-[10px] font-black uppercase text-slate-500">Détails du Problème</Label>
+            <Label className="text-[10px] font-black uppercase text-slate-500">{t('ticket_form.description_label')}</Label>
             <Textarea
               className="min-h-[140px] rounded-xl font-medium"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Décrivez votre problème en détail..."
+              placeholder={t('ticket_form.description_label')}
               required
             />
           </div>
 
           {/* File Upload */}
           <div className="space-y-3">
-            <Label className="text-[10px] font-black uppercase text-slate-500">Pièce Jointe</Label>
+            <Label className="text-[10px] font-black uppercase text-slate-500">{t('ticket_form.attachment_label')}</Label>
             <div className="flex items-center gap-4">
               <label className="flex-1 border-2 border-dashed border-slate-200 rounded-xl p-4 hover:bg-slate-50 cursor-pointer transition-colors">
                 <input type="file" className="hidden" onChange={handleFileChange} accept="image/*,.pdf" />
                 <div className="flex items-center gap-3">
                   <FileUp className="w-5 h-5 text-slate-400" />
-                  <p className="text-xs font-black text-slate-600 uppercase">Ajouter un document</p>
+                  <p className="text-xs font-black text-slate-600 uppercase">{t('ticket_form.attachment_label')}</p>
                 </div>
               </label>
               {attachmentPreview && (
@@ -185,7 +188,7 @@ export function NewTicketForm({ userPhone, onSubmit }) {
 
           {/* Submit Button */}
           <LanguageButton
-            label="Soumettre au Support"
+            label={t('ticket_form.submit')}
             arabicLabel="إرسال الطلب"
             className="w-full py-10 text-xl font-black bg-[#0055A4] text-white rounded-xl shadow-lg hover:bg-[#004080]"
             type="submit"

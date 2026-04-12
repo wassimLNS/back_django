@@ -100,3 +100,68 @@ def notifier_changement_statut(ticket):
         contexte=contexte,
         ticket=ticket,
     )
+
+
+def notifier_ticket_ouvert(ticket):
+    """Envoie un email au client quand son ticket est créé"""
+    contexte = {
+        'client_prenom': ticket.client.prenom,
+        'client_nom':    ticket.client.nom,
+        'numero_ticket': ticket.numero_ticket,
+        'titre':         ticket.titre,
+        'type_service':  ticket.type_service.libelle if ticket.type_service else 'Non spécifié',
+        'priorite':      ticket.priorite,
+        'date':          timezone.now().strftime('%d/%m/%Y à %H:%M'),
+    }
+
+    envoyer_email(
+        destinataire=ticket.client,
+        type_email=TypeEmail.TICKET_OUVERT,
+        sujet=f"[AT] Réclamation {ticket.numero_ticket} enregistrée",
+        contexte=contexte,
+        ticket=ticket,
+    )
+
+
+def notifier_ticket_resolu(ticket):
+    """Envoie un email au client quand son ticket est résolu"""
+    contexte = {
+        'client_prenom': ticket.client.prenom,
+        'client_nom':    ticket.client.nom,
+        'numero_ticket': ticket.numero_ticket,
+        'titre':         ticket.titre,
+        'agent_nom':     f"{ticket.agent.prenom} {ticket.agent.nom}" if ticket.agent else "Équipe AT",
+        'resolution':    ticket.resolution or '',
+        'date':          timezone.now().strftime('%d/%m/%Y à %H:%M'),
+    }
+
+    envoyer_email(
+        destinataire=ticket.client,
+        type_email=TypeEmail.TICKET_RESOLU,
+        sujet=f"[AT] Réclamation {ticket.numero_ticket} résolue",
+        contexte=contexte,
+        ticket=ticket,
+    )
+
+
+def notifier_escalade(ticket, escalade):
+    """Envoie un email au client quand son ticket est escaladé"""
+    type_labels = {'technique': 'Support Technique', 'annexe': 'Service Annexe'}
+
+    contexte = {
+        'client_prenom':  ticket.client.prenom,
+        'client_nom':     ticket.client.nom,
+        'numero_ticket':  ticket.numero_ticket,
+        'titre':          ticket.titre,
+        'type_escalade':  type_labels.get(escalade.type_escalade, escalade.type_escalade),
+        'motif':          escalade.motif,
+        'date':           timezone.now().strftime('%d/%m/%Y à %H:%M'),
+    }
+
+    envoyer_email(
+        destinataire=ticket.client,
+        type_email=TypeEmail.ESCALADE,
+        sujet=f"[AT] Réclamation {ticket.numero_ticket} transmise à un expert",
+        contexte=contexte,
+        ticket=ticket,
+    )

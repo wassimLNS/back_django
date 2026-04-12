@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -6,43 +7,44 @@ import { Progress } from '@/components/ui/progress';
 import { Clock, ChevronRight, ClipboardList, History, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-const STATUS_MAP = {
-  soumis: { label: 'Soumis', color: 'bg-slate-100 text-slate-500' },
-  ouvert: { label: 'Ouvert', color: 'bg-blue-100 text-blue-800' },
-  en_cours: { label: 'En Cours', color: 'bg-amber-100 text-amber-800' },
-  resolu: { label: 'Résolu', color: 'bg-emerald-100 text-emerald-800' },
-  ferme: { label: 'Fermé', color: 'bg-slate-100 text-slate-600' },
-  rejete: { label: 'Rejeté', color: 'bg-red-100 text-red-800' },
-  escalade_technique: { label: 'Escalade Tech.', color: 'bg-purple-100 text-purple-800' },
-  escalade_annexe: { label: 'Escalade Annexe', color: 'bg-orange-100 text-orange-800' },
-};
-
-const PRIORITY_MAP = {
-  critique: { label: 'Critique', color: 'bg-red-100 text-red-800 border-red-200' },
-  haute: { label: 'Haute', color: 'bg-orange-100 text-orange-800 border-orange-200' },
-  normale: { label: 'Normale', color: 'bg-blue-100 text-blue-800 border-blue-200' },
-  basse: { label: 'Basse', color: 'bg-slate-100 text-slate-600 border-slate-200' },
-};
-
-function getSlaInfo(ticket) {
-  if (!ticket.echeance_sla) return { remains: null, percent: 100, isLate: false };
-  const now = new Date();
-  const deadline = new Date(ticket.echeance_sla);
-  const created = new Date(ticket.created_at);
-  const totalMs = deadline - created;
-  const remainMs = deadline - now;
-  const remains = Math.round(remainMs / (1000 * 60 * 60)); // hours
-  const percent = totalMs > 0 ? Math.max(0, Math.min(100, (remainMs / totalMs) * 100)) : 0;
-  return { remains, percent, isLate: remains < 0 };
-}
-
 export function ActiveQueue({ tickets, onOpenTicket, isHistory = false }) {
+  const { t } = useTranslation();
+
+  const STATUS_MAP = {
+    soumis: { label: t('portal.open'), color: 'bg-slate-100 text-slate-500' },
+    ouvert: { label: t('portal.open'), color: 'bg-blue-100 text-blue-800' },
+    en_cours: { label: t('portal.in_progress'), color: 'bg-amber-100 text-amber-800' },
+    resolu: { label: t('portal.resolved'), color: 'bg-emerald-100 text-emerald-800' },
+    ferme: { label: t('portal.closed'), color: 'bg-slate-100 text-slate-600' },
+    rejete: { label: t('portal.rejected'), color: 'bg-red-100 text-red-800' },
+    escalade_technique: { label: 'Escalade Tech.', color: 'bg-purple-100 text-purple-800' },
+    escalade_annexe: { label: 'Escalade Annexe', color: 'bg-orange-100 text-orange-800' },
+  };
+
+  const PRIORITY_MAP = {
+    critique: { label: 'Critique', color: 'bg-red-100 text-red-800 border-red-200' },
+    haute: { label: 'Haute', color: 'bg-orange-100 text-orange-800 border-orange-200' },
+    normale: { label: 'Normale', color: 'bg-blue-100 text-blue-800 border-blue-200' },
+    basse: { label: 'Basse', color: 'bg-slate-100 text-slate-600 border-slate-200' },
+  };
+
+  function getSlaInfo(ticket) {
+    if (!ticket.echeance_sla) return { remains: null, percent: 100, isLate: false };
+    const now = new Date();
+    const deadline = new Date(ticket.echeance_sla);
+    const created = new Date(ticket.created_at);
+    const totalMs = deadline - created;
+    const remainMs = deadline - now;
+    const remains = Math.round(remainMs / (1000 * 60 * 60));
+    const percent = totalMs > 0 ? Math.max(0, Math.min(100, (remainMs / totalMs) * 100)) : 0;
+    return { remains, percent, isLate: remains < 0 };
+  }
   return (
     <div className="bg-white rounded-3xl shadow-2xl border overflow-hidden">
       <div className="p-8 border-b bg-slate-50/30 flex items-center gap-4">
         {isHistory ? <History className="w-6 h-6 text-[#0055A4]" /> : <ClipboardList className="w-6 h-6 text-[#0055A4]" />}
         <h2 className="text-2xl font-black uppercase tracking-tighter">
-          {isHistory ? "Archives des Dossiers" : "File de Traitement"}
+          {isHistory ? t('sidebar.history') : t('agent.active_queue')}
         </h2>
         <Badge className="bg-[#0055A4]/10 text-[#0055A4] border-none shadow-none text-[10px] font-black px-3 py-1 ml-2">
           {tickets.length}
@@ -52,9 +54,9 @@ export function ActiveQueue({ tickets, onOpenTicket, isHistory = false }) {
         <TableHeader className="bg-slate-50/50">
           <TableRow>
             <TableHead className="pl-10 text-[11px] font-black uppercase h-16">Ticket</TableHead>
-            <TableHead className="text-[11px] font-black uppercase">Service</TableHead>
-            <TableHead className="text-[11px] font-black uppercase">Priorité</TableHead>
-            <TableHead className="text-[11px] font-black uppercase">{isHistory ? 'Statut' : 'SLA'}</TableHead>
+            <TableHead className="text-[11px] font-black uppercase">{t('portal.service')}</TableHead>
+            <TableHead className="text-[11px] font-black uppercase">{t('portal.priority')}</TableHead>
+            <TableHead className="text-[11px] font-black uppercase">{isHistory ? t('portal.status') : 'SLA'}</TableHead>
             <TableHead className="pr-10 text-right text-[11px] font-black uppercase">Action</TableHead>
           </TableRow>
         </TableHeader>
@@ -62,7 +64,7 @@ export function ActiveQueue({ tickets, onOpenTicket, isHistory = false }) {
           {tickets.length === 0 ? (
             <TableRow>
               <TableCell colSpan={5} className="h-40 text-center text-slate-400 font-bold uppercase text-[10px]">
-                Aucun dossier trouvé dans cette section
+                {t('portal.no_tickets')}
               </TableCell>
             </TableRow>
           ) : (

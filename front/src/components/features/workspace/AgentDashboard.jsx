@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -14,6 +15,7 @@ const MOCK_VOLUME_DATA = [
 ];
 
 export function AgentDashboard({ tickets = [], user }) {
+  const { t } = useTranslation();
   // Calculer les KPIs à partir des tickets réels
   const stats = useMemo(() => {
     const today = new Date().toDateString();
@@ -52,7 +54,7 @@ export function AgentDashboard({ tickets = [], user }) {
         <div className="grid grid-cols-2 gap-6">
           <Card className="rounded-3xl shadow-xl bg-white">
             <CardContent className="p-10 text-center">
-              <p className="text-[11px] font-black text-slate-400 uppercase mb-4">Résolus Aujourd'hui</p>
+              <p className="text-[11px] font-black text-slate-400 uppercase mb-4">{t('agent.resolved_today')}</p>
               <h3 className="text-6xl font-black text-[#0055A4] tracking-tighter">{stats.resolvedToday}</h3>
               <Badge className="bg-emerald-50 text-emerald-600 border border-emerald-100 mt-6 px-6 py-2 rounded-xl text-[10px] font-black shadow-none">
                 <CheckCircle2 className="w-3 h-3 mr-1" /> {stats.resolvedTotal} total résolus
@@ -61,7 +63,7 @@ export function AgentDashboard({ tickets = [], user }) {
           </Card>
           <Card className="rounded-3xl shadow-xl bg-white">
             <CardContent className="p-10 text-center">
-              <p className="text-[11px] font-black text-slate-400 uppercase mb-4">Score Satisfaction</p>
+              <p className="text-[11px] font-black text-slate-400 uppercase mb-4">{t('agent.satisfaction')}</p>
               <h3 className="text-6xl font-black text-amber-500 tracking-tighter">{stats.avgSatisfaction}</h3>
               <div className="flex justify-center gap-1 mt-6">
                 {[1, 2, 3, 4, 5].map(s => (
@@ -79,7 +81,7 @@ export function AgentDashboard({ tickets = [], user }) {
         {/* Volume Chart */}
         <Card className="rounded-3xl shadow-xl bg-white overflow-hidden h-[400px]">
           <CardHeader className="bg-slate-50/50 border-b p-8">
-            <CardTitle className="text-xl font-black text-slate-900 uppercase">Historique Volume</CardTitle>
+            <CardTitle className="text-xl font-black text-slate-900 uppercase">{t('sidebar.history')}</CardTitle>
           </CardHeader>
           <CardContent className="p-8 h-full">
             <ResponsiveContainer width="100%" height="80%">

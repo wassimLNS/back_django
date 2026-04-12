@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
@@ -11,6 +12,7 @@ import { deleteTicket } from '@/api/tickets';
 
 export function CustomerChatDrawer({ ticket, messages = [], onClose, onSendMessage, onTicketDeleted }) {
   const [replyText, setReplyText] = useState('');
+  const { t } = useTranslation();
   const [previewFile, setPreviewFile] = useState(null); // { blobUrl, nom, type_mime }
   const [loadingPreview, setLoadingPreview] = useState(false);
 
@@ -72,7 +74,7 @@ export function CustomerChatDrawer({ ticket, messages = [], onClose, onSendMessa
                 Ticket {ticketRef}
               </SheetTitle>
               <SheetDescription className="text-white/70 text-[10px] font-black uppercase tracking-widest mt-1">
-                Chat Support Client — Algérie Télécom
+                {t('chat.title')} — {t('login.brand')}
               </SheetDescription>
             </div>
           </div>
@@ -88,7 +90,7 @@ export function CustomerChatDrawer({ ticket, messages = [], onClose, onSendMessa
               {typeName && (
                 <div className="flex items-center gap-3 px-5 py-3 border-b border-slate-100 bg-slate-50/50">
                   <Tag className="w-4 h-4 text-[#0055A4]" />
-                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Type de Service</span>
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">{t('ticket_form.service_label')}</span>
                   <Badge className="ml-auto bg-[#0055A4]/10 text-[#0055A4] text-[10px] font-black uppercase px-3 py-1 rounded-full border-none shadow-none">
                     {typeName}
                   </Badge>
@@ -99,7 +101,7 @@ export function CustomerChatDrawer({ ticket, messages = [], onClose, onSendMessa
               {ticket?.created_at && (
                 <div className="flex items-center gap-3 px-5 py-3 border-b border-slate-100 bg-slate-50/50">
                   <Calendar className="w-4 h-4 text-[#0055A4]" />
-                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Date de Création</span>
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">{t('portal.created_at')}</span>
                   <span className="ml-auto text-[11px] font-bold text-slate-700">
                     {new Date(ticket.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                   </span>
@@ -124,7 +126,7 @@ export function CustomerChatDrawer({ ticket, messages = [], onClose, onSendMessa
                     }}
                     className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-red-50 text-red-600 text-[10px] font-black uppercase tracking-wider hover:bg-red-100 transition-colors cursor-pointer border border-red-100"
                   >
-                    <Trash2 className="w-4 h-4" /> Supprimer ce ticket
+                    <Trash2 className="w-4 h-4" /> {t('common.delete')}
                   </button>
                 </div>
               )}
@@ -133,7 +135,7 @@ export function CustomerChatDrawer({ ticket, messages = [], onClose, onSendMessa
               {piecesJointes.length > 0 && (
                 <div className="px-5 py-4">
                   <p className="text-[10px] font-black text-slate-400 uppercase mb-3 flex items-center gap-2">
-                    <Paperclip className="w-3.5 h-3.5" /> Pièces Jointes ({piecesJointes.length})
+                    <Paperclip className="w-3.5 h-3.5" /> {t('chat.attachment')} ({piecesJointes.length})
                   </p>
                   <div className="space-y-2">
                     {piecesJointes.map((pj) => {
@@ -208,7 +210,7 @@ export function CustomerChatDrawer({ ticket, messages = [], onClose, onSendMessa
               {messages.length === 0 && !ticket?.description && (
                 <div className="text-center py-10">
                   <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">
-                    Aucun message pour le moment
+                    {t('chat.no_messages')}
                   </p>
                 </div>
               )}
@@ -222,7 +224,7 @@ export function CustomerChatDrawer({ ticket, messages = [], onClose, onSendMessa
           <div className="p-6 border-t bg-white shrink-0">
             <div className="flex gap-4">
               <Textarea
-                placeholder="Tapez votre message ici..."
+                placeholder={t('chat.placeholder')}
                 className="min-h-[80px] rounded-2xl border-slate-200 bg-slate-50/50"
                 value={replyText}
                 onChange={(e) => setReplyText(e.target.value)}

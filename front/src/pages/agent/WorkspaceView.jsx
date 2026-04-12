@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useContext, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { AuthContext } from '@/contexts/AuthContext';
 import { getAgentTickets, getAgentTicketDetail, updateTicketStatus, escalateTicket, getEscalatedTickets } from '@/api/tickets';
 import { getMessages, sendMessage as sendMessageAPI, getAISummary } from '@/api/chat';
@@ -21,6 +22,7 @@ import '@/components/features/workspace/workspace-view.css';
 
 export default function WorkspaceView({ agentRole = 'agent' }) {
   const { user } = useContext(AuthContext);
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const activeTab = searchParams.get('tab') || 'dashboard';
   const [searchTerm, setSearchTerm] = useState('');
@@ -196,11 +198,11 @@ export default function WorkspaceView({ agentRole = 'agent' }) {
         <div className="workspace-actions">
           <div className="workspace-search-wrapper">
             <Search className="workspace-search-icon" />
-            <Input placeholder="Recherche Ticket..." className="workspace-search-input" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+            <Input placeholder={t('portal.search')} className="workspace-search-input" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
           </div>
-          <Button variant={activeTab === 'dashboard' ? 'default' : 'outline'} className="workspace-nav-btn" onClick={() => setActiveTab('dashboard')}>Dashboard</Button>
-          <Button variant={activeTab === 'tickets' ? 'default' : 'outline'} className="workspace-nav-btn" onClick={() => setActiveTab('tickets')}>Tickets</Button>
-          <Button variant={activeTab === 'history' ? 'default' : 'outline'} className="workspace-nav-btn" onClick={() => setActiveTab('history')}>Historique</Button>
+          <Button variant={activeTab === 'dashboard' ? 'default' : 'outline'} className="workspace-nav-btn" onClick={() => setActiveTab('dashboard')}>{t('sidebar.performance')}</Button>
+          <Button variant={activeTab === 'tickets' ? 'default' : 'outline'} className="workspace-nav-btn" onClick={() => setActiveTab('tickets')}>{t('sidebar.tickets')}</Button>
+          <Button variant={activeTab === 'history' ? 'default' : 'outline'} className="workspace-nav-btn" onClick={() => setActiveTab('history')}>{t('sidebar.history')}</Button>
         </div>
       </div>
 
@@ -229,7 +231,7 @@ export default function WorkspaceView({ agentRole = 'agent' }) {
               {agentRole === 'agent' && !isClosed && (
                 <Button variant="ghost" className="workspace-escalate-btn" onClick={() => setShowEscalation(!showEscalation)} disabled={isSummarizing}>
                   {isSummarizing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <ArrowUpCircle className="w-4 h-4 mr-2" />}
-                  {isSummarizing ? "Analyse..." : "Escalader"}
+                  {isSummarizing ? "..." : t('agent.escalate')}
                 </Button>
               )}
               <Button size="icon" variant="ghost" className="workspace-close-btn" onClick={() => setSelectedTicket(null)}>
@@ -246,11 +248,11 @@ export default function WorkspaceView({ agentRole = 'agent' }) {
                 <div className="workspace-escalation-grid">
                   <Button variant="outline" className="workspace-escalation-option" onClick={() => handleEscalate('technique')}>
                     <Cpu className="w-5 h-5 mb-2" />
-                    <span className="text-[10px] font-black uppercase">Support Technique</span>
+                    <span className="text-[10px] font-black uppercase">{t('sidebar.brand_sub_technique')}</span>
                   </Button>
                   <Button variant="outline" className="workspace-escalation-option" onClick={() => handleEscalate('annexe')}>
                     <MapPin className="w-5 h-5 mb-2" />
-                    <span className="text-[10px] font-black uppercase">Annexe Locale</span>
+                    <span className="text-[10px] font-black uppercase">{t('sidebar.brand_sub_annexe')}</span>
                   </Button>
                 </div>
               </div>

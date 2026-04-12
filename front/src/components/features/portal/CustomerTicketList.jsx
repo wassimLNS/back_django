@@ -1,27 +1,29 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MessageSquare, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-// Map Django statuses to display labels
-const STATUS_MAP = {
-  soumis: { label: 'Soumis', color: 'bg-slate-100 text-slate-500' },
-  ouvert: { label: 'Ouvert', color: 'bg-blue-100 text-blue-800' },
-  en_cours: { label: 'En Cours', color: 'bg-amber-100 text-amber-800' },
-  resolu: { label: 'Résolu', color: 'bg-emerald-100 text-emerald-800' },
-  ferme: { label: 'Fermé', color: 'bg-slate-100 text-slate-600' },
-  rejete: { label: 'Rejeté', color: 'bg-red-100 text-red-800' },
-  escalade_technique: { label: 'Escalade Tech.', color: 'bg-purple-100 text-purple-800' },
-  escalade_annexe: { label: 'Escalade Annexe', color: 'bg-orange-100 text-orange-800' },
-};
-
 export function CustomerTicketList({ tickets, loading, onSelectTicket }) {
+  const { t } = useTranslation();
+
+  const STATUS_MAP = {
+    soumis: { label: t('portal.open'), color: 'bg-slate-100 text-slate-500' },
+    ouvert: { label: t('portal.open'), color: 'bg-blue-100 text-blue-800' },
+    en_cours: { label: t('portal.in_progress'), color: 'bg-amber-100 text-amber-800' },
+    resolu: { label: t('portal.resolved'), color: 'bg-emerald-100 text-emerald-800' },
+    ferme: { label: t('portal.closed'), color: 'bg-slate-100 text-slate-600' },
+    rejete: { label: t('portal.rejected'), color: 'bg-red-100 text-red-800' },
+    escalade_technique: { label: 'Escalade Tech.', color: 'bg-purple-100 text-purple-800' },
+    escalade_annexe: { label: 'Escalade Annexe', color: 'bg-orange-100 text-orange-800' },
+  };
+
   if (loading) {
     return (
       <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-slate-200">
-        <p className="text-slate-400 font-black uppercase tracking-widest text-xs">Chargement des tickets...</p>
+        <p className="text-slate-400 font-black uppercase tracking-widest text-xs">{t('common.loading')}</p>
       </div>
     );
   }
@@ -29,7 +31,7 @@ export function CustomerTicketList({ tickets, loading, onSelectTicket }) {
   if (!tickets || tickets.length === 0) {
     return (
       <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-slate-200">
-        <p className="text-slate-400 font-black uppercase tracking-widest text-xs">Aucun ticket en cours pour cette ligne</p>
+        <p className="text-slate-400 font-black uppercase tracking-widest text-xs">{t('portal.no_tickets')}</p>
       </div>
     );
   }
@@ -78,7 +80,7 @@ export function CustomerTicketList({ tickets, loading, onSelectTicket }) {
                   className="h-10 text-[10px] font-black uppercase px-6 rounded-xl"
                   onClick={() => onSelectTicket(ticket)}
                 >
-                  <MessageSquare className="w-4 h-4 mr-2" /> Ouvrir Ticket
+                  <MessageSquare className="w-4 h-4 mr-2" /> {t('sidebar.tickets')}
                 </Button>
               </div>
             </CardContent>

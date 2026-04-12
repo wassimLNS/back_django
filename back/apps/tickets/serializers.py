@@ -68,6 +68,14 @@ class CreerTicketSerializer(serializers.ModelSerializer):
             pass
 
         self._attribuer_automatiquement(ticket, centre)
+
+        # Notification email au client
+        try:
+            from apps.notifications.emails import notifier_ticket_ouvert
+            notifier_ticket_ouvert(ticket)
+        except Exception:
+            pass  # Ne pas bloquer la création si l'email échoue
+
         return ticket
 
     def _attribuer_automatiquement(self, ticket, centre):
@@ -141,7 +149,19 @@ class MettreAJourTicketSerializer(serializers.ModelSerializer):
             instance.resolu_a = timezone.now()
         if nouveau_statut == 'ferme' and instance.statut != 'ferme':
             instance.ferme_a = timezone.now()
-        return super().update(instance, validated_data)
+        result = super().update(instance, validated_data)
+
+        # Notifications email
+        try:
+            from apps.notifications.emails import notifier_changement_statut, notifier_ticket_resolu
+            if nouveau_statut == 'resolu':
+                notifier_ticket_resolu(instance)
+            else:
+                notifier_changement_statut(instance)
+        except Exception:
+            pass
+
+        return result
 
 
 class SatisfactionSerializer(serializers.ModelSerializer):
@@ -177,4 +197,13 @@ class CreerEscaladeSerializer(serializers.Serializer):
         else:
             ticket.statut = StatutTicket.ESCALADE_ANNEXE
         ticket.save()
-        return Escalade.objects.create(ticket=ticket, agent_source=agent_source, **validated_data)
+        escalade = Escalade.objects.create(ticket=ticket, agent_source=agent_source, **validated_data)
+
+        # Notification email au client
+        try:
+            from apps.notifications.emails import notifier_escalade
+            notifier_escalade(ticket, escalade)
+        except Exception:
+            pass
+
+        return escalade
