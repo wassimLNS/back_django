@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
@@ -14,6 +15,7 @@ const PRIORITY_MAP = {
 };
 
 export function AdminAssignment({ tickets = [], agents = [], onRefresh }) {
+  const { t } = useTranslation();
   const unassigned = tickets.filter(t => !t.agent_nom && t.statut !== 'resolu' && t.statut !== 'ferme');
   const onlineAgents = agents.filter(a => a.actif);
 
@@ -33,7 +35,7 @@ export function AdminAssignment({ tickets = [], agents = [], onRefresh }) {
           <Database className="w-6 h-6" />
         </div>
         <div>
-          <CardTitle className="text-2xl font-black text-slate-900 uppercase tracking-tighter">File d'Attente Nationale</CardTitle>
+          <CardTitle className="text-2xl font-black text-slate-900 uppercase tracking-tighter">{t('sidebar.assignments')}</CardTitle>
           <CardDescription className="text-[10px] font-black uppercase tracking-widest text-emerald-600 mt-1">Assignation Manuelle Chirurgicale</CardDescription>
         </div>
       </CardHeader>
@@ -41,11 +43,11 @@ export function AdminAssignment({ tickets = [], agents = [], onRefresh }) {
         <Table>
           <TableHeader className="bg-slate-50/50">
             <TableRow>
-              <TableHead className="pl-10 text-[11px] font-black uppercase h-16">Réf / Client</TableHead>
-              <TableHead className="text-[11px] font-black uppercase">Service Impacté</TableHead>
-              <TableHead className="text-[11px] font-black uppercase">Niveau Priorité</TableHead>
-              <TableHead className="text-[11px] font-black uppercase">Statut</TableHead>
-              <TableHead className="pr-10 text-right text-[11px] font-black uppercase">Assignation Expert</TableHead>
+              <TableHead className="pl-10 text-[11px] font-black uppercase h-16">Ticket</TableHead>
+              <TableHead className="text-[11px] font-black uppercase">{t('portal.service')}</TableHead>
+              <TableHead className="text-[11px] font-black uppercase">{t('portal.priority')}</TableHead>
+              <TableHead className="text-[11px] font-black uppercase">{t('portal.status')}</TableHead>
+              <TableHead className="pr-10 text-right text-[11px] font-black uppercase">{t('sidebar.experts')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -83,7 +85,7 @@ export function AdminAssignment({ tickets = [], agents = [], onRefresh }) {
                         defaultValue=""
                         className="w-52 h-11 text-[11px] font-black uppercase rounded-xl border border-slate-200 shadow-sm bg-white px-4 focus:outline-none focus:ring-2 focus:ring-[#0055A4]/30 cursor-pointer"
                       >
-                        <option value="">Choisir Expert</option>
+                        <option value="">{t('sidebar.experts')}</option>
                         {onlineAgents.map(agent => (
                           <option key={agent.id} value={agent.id}>
                             {agent.prenom} {agent.nom} ({agent.tickets_actifs || 0} actifs)

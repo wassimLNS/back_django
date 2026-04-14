@@ -1,23 +1,25 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { History, UserCircle, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-const STATUS_MAP = {
-  soumis:              { label: 'Soumis',          cls: 'bg-slate-100 text-slate-500' },
-  ouvert:              { label: 'Ouvert',          cls: 'bg-blue-100 text-blue-800' },
-  en_cours:            { label: 'En Cours',        cls: 'bg-amber-100 text-amber-800' },
-  resolu:              { label: 'Résolu',          cls: 'bg-emerald-100 text-emerald-800' },
-  ferme:               { label: 'Fermé',           cls: 'bg-slate-100 text-slate-600' },
-  rejete:              { label: 'Rejeté',          cls: 'bg-red-100 text-red-800' },
-  escalade_technique:  { label: 'Escalade Tech.',  cls: 'bg-purple-100 text-purple-800' },
-  escalade_annexe:     { label: 'Escalade Annexe', cls: 'bg-orange-100 text-orange-800' },
-};
-
 export function AdminHistory({ tickets = [] }) {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
+
+  const STATUS_MAP = {
+    soumis:              { label: t('portal.open'),        cls: 'bg-slate-100 text-slate-500' },
+    ouvert:              { label: t('portal.open'),        cls: 'bg-blue-100 text-blue-800' },
+    en_cours:            { label: t('portal.in_progress'), cls: 'bg-amber-100 text-amber-800' },
+    resolu:              { label: t('portal.resolved'),    cls: 'bg-emerald-100 text-emerald-800' },
+    ferme:               { label: t('portal.closed'),      cls: 'bg-slate-100 text-slate-600' },
+    rejete:              { label: t('portal.rejected'),    cls: 'bg-red-100 text-red-800' },
+    escalade_technique:  { label: 'Escalade Tech.',        cls: 'bg-purple-100 text-purple-800' },
+    escalade_annexe:     { label: 'Escalade Annexe',       cls: 'bg-orange-100 text-orange-800' },
+  };
 
   const filtered = tickets.filter(t => {
     if (!searchQuery) return true;
@@ -36,13 +38,13 @@ export function AdminHistory({ tickets = [] }) {
             <History className="w-6 h-6" />
           </div>
           <div>
-            <CardTitle className="text-2xl font-black text-slate-900 uppercase tracking-tighter">Audit Historique Global</CardTitle>
+            <CardTitle className="text-2xl font-black text-slate-900 uppercase tracking-tighter">{t('sidebar.history')}</CardTitle>
             <p className="text-[10px] font-black uppercase tracking-widest text-emerald-600 mt-1">Traçabilité complète des réclamations</p>
           </div>
         </div>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-          <input type="text" placeholder="Rechercher…" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+          <input type="text" placeholder={t('portal.search')} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-[#0055A4]/30 w-56" />
         </div>
       </CardHeader>
@@ -51,18 +53,18 @@ export function AdminHistory({ tickets = [] }) {
           <TableHeader className="bg-slate-50/50">
             <TableRow>
               <TableHead className="pl-10 text-[11px] font-black uppercase h-16">Ticket ID</TableHead>
-              <TableHead className="text-[11px] font-black uppercase">Service</TableHead>
+              <TableHead className="text-[11px] font-black uppercase">{t('portal.service')}</TableHead>
               <TableHead className="text-[11px] font-black uppercase">Client</TableHead>
-              <TableHead className="text-[11px] font-black uppercase">Expert Assigné</TableHead>
+              <TableHead className="text-[11px] font-black uppercase">{t('sidebar.experts')}</TableHead>
               <TableHead className="text-[11px] font-black uppercase">Date</TableHead>
-              <TableHead className="pr-10 text-right text-[11px] font-black uppercase">Statut Final</TableHead>
+              <TableHead className="pr-10 text-right text-[11px] font-black uppercase">{t('portal.status')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filtered.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="h-40 text-center text-slate-400 font-bold uppercase text-[10px]">
-                  Aucun ticket trouvé
+                  {t('portal.no_tickets')}
                 </TableCell>
               </TableRow>
             ) : (

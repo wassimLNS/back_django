@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { AuthContext } from '@/contexts/AuthContext';
 import { getAgentTickets, getAgentTicketDetail, updateTicketStatus, escalateTicket, getEscalatedTickets } from '@/api/tickets';
 import { getMessages, sendMessage as sendMessageAPI, getAISummary } from '@/api/chat';
+import { useWebSocket } from '@/hooks/useWebSocket';
 import { AgentDashboard } from '@/components/features/workspace/AgentDashboard';
 import { ActiveQueue } from '@/components/features/workspace/ActiveQueue';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -111,13 +112,34 @@ export default function WorkspaceView({ agentRole = 'agent' }) {
     }
   };
 
+  // WebSocket temps réel
+  const { messages: wsMessages, sendMessage: wsSendMessage, isConnected } = useWebSocket(
+    selectedTicket?.id || null
+  );
+
+  // Fusionner les messages HTTP (historique) + WS (temps réel)
+  const allMessages = useMemo(() => {
+    const httpIds = new Set(chatMessages.map(m => m.id));
+    const newWsMessages = wsMessages.filter(m => !httpIds.has(m.id));
+    return [...chatMessages, ...newWsMessages];
+  }, [chatMessages, wsMessages]);
+
   // Send chat message
   const handleSendMessage = async () => {
     if (!selectedTicket || !replyText.trim()) return;
+
+    const text = replyText;
+    setReplyText(''); // Clear UI optimistically
+    
+    // Essayer WebSocket d'abord
+    if (isConnected && wsSendMessage(text)) {
+      return;
+    }
+
+    // Fallback HTTP
     try {
-      const msg = await sendMessageAPI(selectedTicket.id, replyText);
+      const msg = await sendMessageAPI(selectedTicket.id, text);
       setChatMessages(prev => [...prev, msg]);
-      setReplyText('');
     } catch (err) {
       console.error('Failed to send message:', err);
     }
@@ -381,7 +403,7 @@ export default function WorkspaceView({ agentRole = 'agent' }) {
 
                 {/* Messages */}
                 <div className="workspace-messages-list">
-                  {chatMessages.map((m, idx) => {
+                  {allMessages.map((m, idx) => {
                     const isAgent = m.expediteur_role !== 'client';
                     const senderLabel = m.expediteur_role === 'client' ? 'Client' : 'Agent';
                     const dateStr = m.date_envoi ? new Date(m.date_envoi).toLocaleString('fr-FR') : '';
@@ -399,7 +421,7 @@ export default function WorkspaceView({ agentRole = 'agent' }) {
                     );
                   })}
 
-                  {chatMessages.length === 0 && (
+                  {allMessages.length === 0 && (
                     <div className="text-center py-10">
                       <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">Aucun message pour le moment</p>
                     </div>

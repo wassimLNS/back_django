@@ -21,6 +21,7 @@ ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost').split(',')
 # APPLICATIONS
 # ============================================================
 DJANGO_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -204,3 +205,15 @@ STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# ============================================================
+# DJANGO CHANNELS (WebSocket)
+# ============================================================
+ASGI_APPLICATION = 'config.asgi.application'
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+    },
+}

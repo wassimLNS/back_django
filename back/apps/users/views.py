@@ -194,6 +194,19 @@ class AgentsView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+class ClientsView(APIView):
+    permission_classes = [IsAuthenticated, EstAdmin]
+
+    def get(self, request):
+        """Liste des clients (filtrés par centre si l'admin appartient à un centre)"""
+        clients = Utilisateur.objects.filter(role=Role.CLIENT)
+        if getattr(request.user, 'centre', None):
+            clients = clients.filter(centre=request.user.centre)
+        
+        serializer = UtilisateurProfilSerializer(clients, many=True)
+        return Response(serializer.data)
+
+
 class AgentDetailView(APIView):
     permission_classes = [IsAuthenticated, EstAdmin]
 

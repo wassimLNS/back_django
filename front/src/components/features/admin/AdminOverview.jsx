@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -8,15 +9,16 @@ import { cn } from '@/lib/utils';
 
 const COLORS = ['#0055A4', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'];
 
-const DIMENSIONS = [
-  { key: 'types', label: 'Types' },
-  { key: 'temps', label: 'Temps' },
-  { key: 'priorite', label: 'Priorité' },
-  { key: 'agents', label: 'Agents' },
-];
-
 export function AdminOverview({ stats, performances = [], tickets = [] }) {
+  const { t } = useTranslation();
   const [activeDimension, setActiveDimension] = React.useState('types');
+
+  const DIMENSIONS = [
+    { key: 'types', label: t('admin.dim_types') },
+    { key: 'temps', label: t('admin.dim_time') },
+    { key: 'priorite', label: t('admin.dim_priority') },
+    { key: 'agents', label: t('admin.dim_agents') },
+  ];
 
   // KPI cards
   const kpis = useMemo(() => {
@@ -29,10 +31,10 @@ export function AdminOverview({ stats, performances = [], tickets = [] }) {
       return (Date.now() - new Date(a.derniere_connexion).getTime()) < 30 * 60 * 1000;
     }).length;
     return [
-      { label: 'Volume National', value: total, icon: Database, trend: `${stats.en_cours || 0} actifs`, color: 'text-[#0055A4]', bg: 'bg-blue-50' },
-      { label: 'Résolution Globale', value: `${resolution}%`, icon: Award, trend: `${resolus} résolus`, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-      { label: 'Experts Actifs', value: `${actifs}/${performances.length}`, icon: Users, trend: 'En ligne', color: 'text-amber-500', bg: 'bg-amber-50' },
-      { label: 'Tickets Escaladés', value: stats.escalades || 0, icon: AlertTriangle, trend: 'Niveau supérieur', color: 'text-red-600', bg: 'bg-red-50' },
+      { label: t('admin.volume'), value: total, icon: Database, trend: `${stats.en_cours || 0} ${t('admin.actifs')}`, color: 'text-[#0055A4]', bg: 'bg-blue-50' },
+      { label: t('admin.resolution'), value: `${resolution}%`, icon: Award, trend: `${resolus} ${t('admin.resolved')}`, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+      { label: t('admin.active_experts'), value: `${actifs}/${performances.length}`, icon: Users, trend: t('admin.online'), color: 'text-amber-500', bg: 'bg-amber-50' },
+      { label: t('admin.escalated'), value: stats.escalades || 0, icon: AlertTriangle, trend: t('admin.upper_level'), color: 'text-red-600', bg: 'bg-red-50' },
     ];
   }, [stats, performances]);
 
@@ -75,7 +77,7 @@ export function AdminOverview({ stats, performances = [], tickets = [] }) {
   if (!stats) {
     return (
       <div className="flex items-center justify-center h-64 text-slate-400 font-bold uppercase text-xs tracking-widest">
-        Chargement des statistiques…
+        {t('common.loading')}
       </div>
     );
   }
@@ -108,8 +110,8 @@ export function AdminOverview({ stats, performances = [], tickets = [] }) {
         <Card className="lg:col-span-8 rounded-[2rem] shadow-2xl bg-white overflow-hidden">
           <CardHeader className="border-b bg-slate-50/30 p-8 flex flex-row items-center justify-between">
             <div>
-              <CardTitle className="text-2xl font-black text-slate-900 uppercase tracking-tighter">Analytique Multi-Dimensions</CardTitle>
-              <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mt-1">Intelligence Opérationnelle</p>
+              <CardTitle className="text-2xl font-black text-slate-900 uppercase tracking-tighter">{t('admin.analytics')}</CardTitle>
+              <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mt-1">{t('admin.intelligence')}</p>
             </div>
             <div className="flex gap-2 bg-slate-100 p-2 rounded-2xl">
               {DIMENSIONS.map(d => (
@@ -160,8 +162,8 @@ export function AdminOverview({ stats, performances = [], tickets = [] }) {
         {/* Pie Chart - Mix Services */}
         <Card className="lg:col-span-4 rounded-[2rem] shadow-2xl bg-white overflow-hidden">
           <CardHeader className="border-b bg-slate-50/30 p-8">
-            <CardTitle className="text-2xl font-black text-slate-900 uppercase tracking-tighter">Mix Services</CardTitle>
-            <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mt-1">Répartition Technique</p>
+            <CardTitle className="text-2xl font-black text-slate-900 uppercase tracking-tighter">{t('admin.mix_services')}</CardTitle>
+            <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mt-1">{t('admin.technical_split')}</p>
           </CardHeader>
           <CardContent className="h-[450px] flex flex-col items-center justify-center p-8">
             <div className="h-[280px] w-full">

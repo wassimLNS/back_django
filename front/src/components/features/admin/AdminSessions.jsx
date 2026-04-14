@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -6,6 +7,7 @@ import { ShieldAlert, UserCircle, Globe, Laptop, CheckCircle2, XCircle } from 'l
 import { cn } from '@/lib/utils';
 
 export function AdminSessions({ sessions = [] }) {
+  const { t } = useTranslation();
   // Parsing simple du User-Agent pour un affichage plus propre
   const parseUserAgent = (uaString = '') => {
     let browser = 'Inconnu';
@@ -31,8 +33,8 @@ export function AdminSessions({ sessions = [] }) {
           <ShieldAlert className="w-6 h-6" />
         </div>
         <div>
-          <CardTitle className="text-2xl font-black text-slate-900 uppercase tracking-tighter">Historique des Sécurités et Connexions</CardTitle>
-          <p className="text-[10px] font-black uppercase tracking-widest text-emerald-600 mt-1">Audit Centre Opérationnel</p>
+          <CardTitle className="text-2xl font-black text-slate-900 uppercase tracking-tighter">{t('admin.session_history')}</CardTitle>
+          <p className="text-[10px] font-black uppercase tracking-widest text-emerald-600 mt-1">{t('sidebar.audit')}</p>
         </div>
       </CardHeader>
       <CardContent className="p-0">
@@ -50,7 +52,7 @@ export function AdminSessions({ sessions = [] }) {
             {sessions.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="h-40 text-center text-slate-400 font-bold uppercase text-[10px]">
-                  Aucun historique trouvé
+                  {t('portal.no_tickets')}
                 </TableCell>
               </TableRow>
             ) : (
@@ -82,7 +84,7 @@ export function AdminSessions({ sessions = [] }) {
                   <TableCell>
                     {session.succes ? (
                       <Badge className="bg-emerald-50 text-emerald-600 hover:bg-emerald-50 px-3 py-1 flex items-center gap-1 w-fit shadow-none border-none text-[10px] uppercase font-black">
-                        <CheckCircle2 className="w-3 h-3" /> Succès
+                        <CheckCircle2 className="w-3 h-3" /> OK
                       </Badge>
                     ) : (
                       <Badge className="bg-red-50 text-red-600 hover:bg-red-50 px-3 py-1 flex items-center gap-1 w-fit shadow-none border-none text-[10px] uppercase font-black">

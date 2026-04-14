@@ -99,6 +99,8 @@
   },
   "admin": {
     "title": "National Dashboard",
+    "console_title": "General Management Console",
+    "realtime": "Real-Time National Monitoring",
     "export_pdf": "PDF Report",
     "export_excel": "Excel Export",
     "auto_assign": "Auto-Assign",
@@ -108,7 +110,23 @@
     "filter": "Filter",
     "agents_management": "Agent Management",
     "total_agents": "Total agents",
-    "session_history": "Connection History"
+    "session_history": "Connection History",
+    "volume": "National Volume",
+    "resolution": "Global Resolution",
+    "active_experts": "Active Experts",
+    "escalated": "Escalated Tickets",
+    "actifs": "active",
+    "resolved": "resolved",
+    "online": "Online",
+    "upper_level": "Upper level",
+    "analytics": "Multi-Dimensional Analytics",
+    "intelligence": "Operational Intelligence",
+    "mix_services": "Service Mix",
+    "technical_split": "Technical Distribution",
+    "dim_types": "Types",
+    "dim_time": "Time",
+    "dim_priority": "Priority",
+    "dim_agents": "Agents"
   },
   "errors": {
     "not_found_title": "Page Not Found",

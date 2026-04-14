@@ -10,6 +10,7 @@ from .views import (
     LignesView,
     LigneDetailView,
     HistoriqueConnexionsClientsView,
+    ClientsView,
 )
 
 urlpatterns = [
@@ -23,6 +24,7 @@ urlpatterns = [
 
     # Gestion agents (admin)
     path('agents/',         AgentsView.as_view(),       name='agents-list'),
+    path('client/',         ClientsView.as_view(),      name='clients-list'),
     path('agents/<uuid:agent_id>/', AgentDetailView.as_view(), name='agent-detail'),
 
     # Historique connexions (admin)

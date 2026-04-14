@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -24,6 +25,7 @@ function getStatusInfo(agent) {
 }
 
 export function AgentManagement({ agents = [], performances = [], onRefresh }) {
+  const { t } = useTranslation();
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState({
     nom: '', prenom: '', email: '', telephone: '', role: 'agent', mot_de_passe: ''
@@ -77,7 +79,7 @@ export function AgentManagement({ agents = [], performances = [], onRefresh }) {
             onClick={() => setShowModal(true)}
             className="rounded-xl font-black text-[10px] uppercase h-11 px-8 shadow-xl shadow-[#0055A4]/20 bg-[#0055A4] hover:bg-[#003d7a] text-white cursor-pointer"
           >
-            <UserPlus className="w-4 h-4 mr-2" /> Ajouter un Expert
+            <UserPlus className="w-4 h-4 mr-2" /> {t('sidebar.experts')}
           </Button>
         </div>
 
@@ -88,7 +90,7 @@ export function AgentManagement({ agents = [], performances = [], onRefresh }) {
               <Users className="w-6 h-6" />
             </div>
             <div>
-              <CardTitle className="text-2xl font-black text-slate-900 uppercase tracking-tighter">Performance & Audit Experts</CardTitle>
+              <CardTitle className="text-2xl font-black text-slate-900 uppercase tracking-tighter">{t('admin.agents_management')}</CardTitle>
               <p className="text-[10px] font-black uppercase tracking-widest text-emerald-600 mt-1">Supervision Qualité Live</p>
             </div>
           </CardHeader>
@@ -97,7 +99,7 @@ export function AgentManagement({ agents = [], performances = [], onRefresh }) {
               <TableHeader className="bg-slate-50/50">
                 <TableRow>
                   <TableHead className="pl-10 text-[11px] font-black uppercase h-16">Expert / ID</TableHead>
-                  <TableHead className="text-[11px] font-black uppercase">Statut Opérationnel</TableHead>
+                  <TableHead className="text-[11px] font-black uppercase">{t('portal.status')}</TableHead>
                   <TableHead className="text-[11px] font-black uppercase">Charge (Real-time)</TableHead>
 
                   <TableHead className="pr-10 text-right text-[11px] font-black uppercase">Actions</TableHead>
@@ -107,7 +109,7 @@ export function AgentManagement({ agents = [], performances = [], onRefresh }) {
                 {agentsWithPerf.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={5} className="h-40 text-center text-slate-400 font-bold uppercase text-[10px]">
-                      Aucun agent trouvé
+                      {t('portal.no_tickets')}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -174,7 +176,7 @@ export function AgentManagement({ agents = [], performances = [], onRefresh }) {
                 <UserPlus className="w-5 h-5 text-[#0055A4]" />
               </div>
               <div>
-                <h3 className="text-2xl font-black uppercase tracking-tighter text-[#0055A4]">Nouveau Profil Expert</h3>
+                <h3 className="text-2xl font-black uppercase tracking-tighter text-[#0055A4]">{t('sidebar.experts')}</h3>
               </div>
               <button onClick={() => { setShowModal(false); setFormError(''); }} className="ml-auto p-2 rounded-xl hover:bg-slate-100 cursor-pointer">
                 <X className="w-5 h-5 text-slate-400" />
@@ -228,11 +230,11 @@ export function AgentManagement({ agents = [], performances = [], onRefresh }) {
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={() => setShowModal(false)}
                   className="flex-1 h-12 rounded-xl font-black text-xs uppercase text-slate-500 hover:bg-slate-100 transition-colors cursor-pointer">
-                  Annuler
+                  {t('common.cancel')}
                 </button>
                 <Button type="submit" disabled={submitting}
                   className="flex-1 h-12 rounded-xl font-black text-xs uppercase shadow-lg bg-[#0055A4] hover:bg-[#003d7a] text-white cursor-pointer">
-                  {submitting ? 'Création…' : 'Valider Création'}
+                  {submitting ? '...' : t('common.confirm')}
                 </Button>
               </div>
             </form>

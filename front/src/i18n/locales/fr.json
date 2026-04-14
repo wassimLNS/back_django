@@ -99,6 +99,8 @@
   },
   "admin": {
     "title": "Pilotage National",
+    "console_title": "Console Direction Générale",
+    "realtime": "Supervision Nationale Temps Réel",
     "export_pdf": "Rapport PDF",
     "export_excel": "Export Excel",
     "auto_assign": "Attribution Auto",
@@ -108,7 +110,23 @@
     "filter": "Filtrer",
     "agents_management": "Gestion des Agents",
     "total_agents": "Total agents",
-    "session_history": "Historique des Connexions"
+    "session_history": "Historique des Connexions",
+    "volume": "Volume National",
+    "resolution": "Résolution Globale",
+    "active_experts": "Experts Actifs",
+    "escalated": "Tickets Escaladés",
+    "actifs": "actifs",
+    "resolved": "résolus",
+    "online": "En ligne",
+    "upper_level": "Niveau supérieur",
+    "analytics": "Analytique Multi-Dimensions",
+    "intelligence": "Intelligence Opérationnelle",
+    "mix_services": "Mix Services",
+    "technical_split": "Répartition Technique",
+    "dim_types": "Types",
+    "dim_time": "Temps",
+    "dim_priority": "Priorité",
+    "dim_agents": "Agents"
   },
   "errors": {
     "not_found_title": "Page introuvable",

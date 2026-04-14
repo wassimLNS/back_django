@@ -120,9 +120,9 @@ export default function AdminView() {
             <Cpu className="w-8 h-8" />
           </div>
           <div>
-            <h1 className="text-4xl font-black text-slate-900 tracking-tighter uppercase leading-none">Console Direction Générale</h1>
+            <h1 className="text-4xl font-black text-slate-900 tracking-tighter uppercase leading-none">{t('admin.console_title')}</h1>
             <p className="text-emerald-600 font-black text-[10px] uppercase tracking-widest mt-3 flex items-center gap-2">
-              <Activity className="w-4 h-4 animate-pulse" /> Supervision Nationale Temps Réel
+              <Activity className="w-4 h-4 animate-pulse" /> {t('admin.realtime')}
             </p>
           </div>
         </div>

@@ -146,6 +146,7 @@ export default function DashboardLayout({ children }) {
 
         {/* Footer */}
         <div className="sidebar-footer">
+          <LanguageSwitcher />
           <div className="sidebar-user">
             <div className="sidebar-user-avatar">
               <UserCircle className="w-5 h-5" />
@@ -155,7 +156,6 @@ export default function DashboardLayout({ children }) {
               <p>{roleLabel}</p>
             </div>
           </div>
-          <LanguageSwitcher />
           <button className="sidebar-logout-btn" onClick={handleLogout}>
             <LogOut /> {t('sidebar.logout')}
           </button>

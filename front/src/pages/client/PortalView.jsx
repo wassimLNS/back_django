@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { AuthContext } from '@/contexts/AuthContext';
 import { getMyTickets, getTicketDetail } from '@/api/tickets';
 import { getMessages, sendMessage as sendMessageAPI } from '@/api/chat';
+import { useWebSocket } from '@/hooks/useWebSocket';
 import { NewTicketForm } from '@/components/features/portal/NewTicketForm';
 import { CustomerTicketList } from '@/components/features/portal/CustomerTicketList';
 import { CustomerChatDrawer } from '@/components/features/portal/CustomerChatDrawer';
@@ -58,8 +59,25 @@ export default function PortalView() {
     }
   };
 
+  // WebSocket temps réel pour le ticket sélectionné
+  const { messages: wsMessages, sendMessage: wsSendMessage, isConnected } = useWebSocket(
+    selectedTicket?.id || null
+  );
+
+  // Fusionner les messages HTTP (historique) + WS (temps réel)
+  const allMessages = React.useMemo(() => {
+    const httpIds = new Set(chatMessages.map(m => m.id));
+    const newWsMessages = wsMessages.filter(m => !httpIds.has(m.id));
+    return [...chatMessages, ...newWsMessages];
+  }, [chatMessages, wsMessages]);
+
   const handleSendMessage = async (text) => {
     if (!selectedTicket) return;
+    // Essayer d'envoyer via WebSocket d'abord (temps réel)
+    if (isConnected && wsSendMessage(text)) {
+      return; // Le message arrivera via onMessage du WebSocket
+    }
+    // Fallback HTTP si WS pas connecté
     try {
       const newMsg = await sendMessageAPI(selectedTicket.id, text);
       setChatMessages(prev => [...prev, newMsg]);
@@ -112,7 +130,7 @@ export default function PortalView() {
 
       <CustomerChatDrawer
         ticket={selectedTicket}
-        messages={chatMessages}
+        messages={allMessages}
         onClose={() => { setSelectedTicket(null); setChatMessages([]); }}
         onSendMessage={handleSendMessage}
         onTicketDeleted={() => { setSelectedTicket(null); setChatMessages([]); fetchTickets(); }}
