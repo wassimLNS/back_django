@@ -24,7 +24,7 @@ function getStatusInfo(agent) {
   return { label: 'Offline', dot: 'bg-amber-500' };
 }
 
-export function AgentManagement({ agents = [], performances = [], onRefresh }) {
+export function AgentManagement({ agents = [], performances = [], onRefresh, onAuditAgent }) {
   const { t } = useTranslation();
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState({
@@ -146,7 +146,9 @@ export function AgentManagement({ agents = [], performances = [], onRefresh }) {
                         </TableCell>
                         <TableCell className="text-right pr-10">
                           <div className="flex justify-end gap-2">
-                            <button className="text-[11px] font-black uppercase text-[#0055A4] hover:bg-[#0055A4]/10 px-5 py-2 rounded-xl transition-colors cursor-pointer">
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); if (onAuditAgent) onAuditAgent(agent); }}
+                              className="text-[11px] font-black uppercase text-[#0055A4] hover:bg-[#0055A4]/10 px-5 py-2 rounded-xl transition-colors cursor-pointer">
                               AUDIT <ChevronRight className="w-4 h-4 ml-2 inline" />
                             </button>
                             <button

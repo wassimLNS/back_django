@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import (TypesServiceView, MesTicketsView, MonTicketDetailView, MesTicketsAgentView, TicketAgentDetailView, TicketsEscaladesView, TousLesTicketsView, AttribuerTicketView, PiecesJointesView, PieceJointeDownloadView, EscaladerTicketView)
+from .views import (TypesServiceView, MesTicketsView, MonTicketDetailView, MesTicketsAgentView, TicketAgentDetailView, TicketsEscaladesView, TousLesTicketsView, AttribuerTicketView, PiecesJointesView, PieceJointeDownloadView, EscaladerTicketView, TicketHistoriqueClientView)
 
 urlpatterns = [
     path('types-service/', TypesServiceView.as_view(), name='types-service'),
@@ -7,6 +7,7 @@ urlpatterns = [
     path('mes-tickets/<uuid:ticket_id>/', MonTicketDetailView.as_view(), name='mon-ticket-detail'),
     path('agent/mes-tickets/', MesTicketsAgentView.as_view(), name='agent-mes-tickets'),
     path('agent/mes-tickets/<uuid:ticket_id>/', TicketAgentDetailView.as_view(), name='agent-ticket-detail'),
+    path('agent/mes-tickets/<uuid:ticket_id>/historique/', TicketHistoriqueClientView.as_view(), name='agent-ticket-historique'),
     path('agent/mes-tickets/<uuid:ticket_id>/escalader/', EscaladerTicketView.as_view(), name='escalader-ticket'),
     path('escalades/', TicketsEscaladesView.as_view(), name='tickets-escalades'),
     path('admin/tous/', TousLesTicketsView.as_view(), name='tous-tickets'),

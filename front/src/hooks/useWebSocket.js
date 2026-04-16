@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
+import Cookies from 'js-cookie';
 
 /**
  * Hook React pour le chat WebSocket en temps réel.
@@ -16,11 +17,9 @@ export function useWebSocket(ticketId) {
   const reconnectTimer = useRef(null);
   const retryCount = useRef(0);
   const MAX_RETRIES = 5;
-
   // Récupérer le token JWT depuis les cookies
   const getToken = useCallback(() => {
-    const match = document.cookie.match(/(?:^|;\s*)access_token=([^;]*)/);
-    return match ? match[1] : null;
+    return Cookies.get('access') || null;
   }, []);
 
   const connect = useCallback(() => {

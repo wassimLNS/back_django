@@ -112,6 +112,18 @@ class TicketsEscaladesView(APIView):
         return Response(TicketListSerializer(tickets, many=True).data)
 
 
+class TicketHistoriqueClientView(APIView):
+    permission_classes = [IsAuthenticated, EstAgent]
+
+    def get(self, request, ticket_id):
+        try:
+            ticket = Ticket.objects.get(id=ticket_id, agent=request.user)
+            historique = Ticket.objects.filter(client=ticket.client).exclude(id=ticket.id).order_by('-created_at')
+            return Response(TicketListSerializer(historique, many=True).data)
+        except Ticket.DoesNotExist:
+            return Response({'error': 'Ticket introuvable'}, status=status.HTTP_404_NOT_FOUND)
+
+
 class TousLesTicketsView(APIView):
     permission_classes = [IsAuthenticated, EstAdmin]
 

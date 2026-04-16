@@ -63,6 +63,12 @@ export const getAgentTicketDetail = async (id) => {
   return response.data;
 };
 
+// Get client's ticket history
+export const getTicketClientHistory = async (id) => {
+  const response = await api.get(`/tickets/agent/mes-tickets/${id}/historique/`);
+  return response.data;
+};
+
 // Update ticket status / resolution
 export const updateTicketStatus = async (id, data) => {
   const response = await api.put(`/tickets/agent/mes-tickets/${id}/`, data);

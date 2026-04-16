@@ -127,6 +127,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
             lu_par_client=(self.user.role == 'client'),
             lu_par_agent=(self.user.role != 'client'),
         )
+
+        if self.user.role != 'client' and ticket.statut in ['soumis', 'ouvert']:
+            ticket.statut = 'en_cours'
+            ticket.save()
+
         return {
             'id':              message.id,
             'expediteur_type': message.expediteur_type,

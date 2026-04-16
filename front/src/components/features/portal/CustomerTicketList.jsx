@@ -3,14 +3,15 @@ import { useTranslation } from 'react-i18next';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { MessageSquare, Clock } from 'lucide-react';
+import { MessageSquare, Clock, Trash2 } from 'lucide-react';
+import { deleteTicket } from '@/api/tickets';
 import { cn } from '@/lib/utils';
 
-export function CustomerTicketList({ tickets, loading, onSelectTicket }) {
+export function CustomerTicketList({ tickets, loading, onSelectTicket, onTicketDeleted }) {
   const { t } = useTranslation();
 
   const STATUS_MAP = {
-    soumis: { label: t('portal.open'), color: 'bg-slate-100 text-slate-500' },
+    soumis: { label: 'Nouveau', color: 'bg-indigo-100 text-indigo-700' },
     ouvert: { label: t('portal.open'), color: 'bg-blue-100 text-blue-800' },
     en_cours: { label: t('portal.in_progress'), color: 'bg-amber-100 text-amber-800' },
     resolu: { label: t('portal.resolved'), color: 'bg-emerald-100 text-emerald-800' },
@@ -56,12 +57,32 @@ export function CustomerTicketList({ tickets, loading, onSelectTicket }) {
                   <Clock className="w-3 h-3" /> {dateStr}
                 </p>
               </div>
-              <Badge className={cn(
-                "px-4 py-1 text-[9px] font-black uppercase rounded-full shadow-none",
-                statusInfo.color
-              )}>
-                {statusInfo.label}
-              </Badge>
+              <div className="flex gap-2 items-center">
+                <Badge className={cn(
+                  "px-4 py-1 text-[9px] font-black uppercase rounded-full shadow-none",
+                  statusInfo.color
+                )}>
+                  {statusInfo.label}
+                </Badge>
+                {ticket.statut === 'soumis' && (
+                  <button
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      if (!window.confirm('Êtes-vous sûr de vouloir supprimer ce ticket ?')) return;
+                      try {
+                        await deleteTicket(ticket.id);
+                        if (onTicketDeleted) onTicketDeleted();
+                      } catch (err) {
+                        alert('Erreur lors de la suppression.');
+                      }
+                    }}
+                    className="p-1.5 rounded-full hover:bg-red-50 text-slate-300 hover:text-red-500 transition-colors"
+                    title="Supprimer le ticket"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
             </CardHeader>
             <CardContent className="p-8 space-y-6">
               <div className="flex gap-2">

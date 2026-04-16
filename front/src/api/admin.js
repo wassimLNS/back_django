@@ -61,6 +61,13 @@ export const assignTicket = async (ticketId, agentId) => {
   return response.data;
 };
 
+// ─── Paramètres du centre ───────────────────────────────────
+
+export const updateCentreParams = async (data) => {
+  const response = await api.put('/centres/mes-parametres/', data);
+  return response.data;
+};
+
 // ─── Exports ────────────────────────────────────────────────
 
 export const exportPDF = async () => {

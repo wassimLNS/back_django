@@ -2,13 +2,15 @@ import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AuthContext } from '@/contexts/AuthContext';
-import { getAdminStats, getAgentsPerformance, getAgentsList, getAllTickets, exportPDF, exportExcel, getSessionHistory } from '@/api/admin';
+import { getAdminStats, getAgentsPerformance, getAgentsList, getAllTickets, exportPDF, exportExcel, getSessionHistory, updateCentreParams } from '@/api/admin';
+import { getMessages } from '@/api/chat';
 import { AdminOverview } from '@/components/features/admin/AdminOverview';
 import { AgentManagement } from '@/components/features/admin/AgentManagement';
 import { AdminAssignment } from '@/components/features/admin/AdminAssignment';
 import { AdminHistory } from '@/components/features/admin/AdminHistory';
 import { AdminSessions } from '@/components/features/admin/AdminSessions';
-import { Cpu, Activity, Search, UserCircle, Filter, Calendar as CalendarIcon, X, FileDown, FileSpreadsheet, Loader2 } from 'lucide-react';
+import { Cpu, Activity, Search, UserCircle, Filter, Calendar as CalendarIcon, X, FileDown, FileSpreadsheet, Loader2, MessageSquare, Eye } from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 
 export default function AdminView() {
@@ -23,6 +25,11 @@ export default function AdminView() {
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
+  const [auditAgent, setAuditAgent] = useState(null);
+  const [auditTickets, setAuditTickets] = useState([]);
+  const [auditMessages, setAuditMessages] = useState([]);
+  const [auditSelectedTicket, setAuditSelectedTicket] = useState(null);
+  const [auditLoading, setAuditLoading] = useState(false);
 
   // Toolbar filters
   const [searchTerm, setSearchTerm] = useState('');
@@ -30,11 +37,20 @@ export default function AdminView() {
   const [filterAgent, setFilterAgent] = useState('all');
   const [filterStartDate, setFilterStartDate] = useState('');
   const [filterEndDate, setFilterEndDate] = useState('');
-  const [assignmentMode, setAssignmentMode] = useState('auto');
+  const [assignmentMode, _setAssignmentMode] = useState(() => localStorage.getItem('assignmentMode') || 'auto');
+  const setAssignmentMode = async (mode) => {
+    _setAssignmentMode(mode);
+    localStorage.setItem('assignmentMode', mode);
+    try {
+      await updateCentreParams({ attribution_auto_active: mode === 'auto' });
+    } catch (e) {
+      console.error('Erreur lors de la mise à jour des paramètres du centre', e);
+    }
+  };
 
 
-  const fetchAll = useCallback(async () => {
-    setLoading(true);
+  const fetchAll = useCallback(async (isBackground = false) => {
+    if (!isBackground) setLoading(true);
     try {
       const filters = {};
       if (filterService !== 'all' && activeTab !== 'sessions') filters.service = filterService;
@@ -77,13 +93,46 @@ export default function AdminView() {
     } catch (err) {
       console.error('Admin fetch error:', err);
     } finally {
-      setLoading(false);
+      if (!isBackground) setLoading(false);
     }
   }, [filterService, filterAgent, filterStartDate, filterEndDate, searchTerm, activeTab]);
 
   useEffect(() => {
     fetchAll();
+    
+    // Auto-refresh pour voir les nouveaux tickets (toutes les 10s si on est sur la tab assignment)
+    const intervalId = setInterval(() => {
+      // Refresh background only
+      fetchAll(true);
+    }, 10000);
+    return () => clearInterval(intervalId);
   }, [fetchAll]);
+
+  // Audit agent: filter tickets assigned to this agent
+  const handleAuditAgent = (agent) => {
+    setAuditAgent(agent);
+    setAuditSelectedTicket(null);
+    setAuditMessages([]);
+    const agentTickets = tickets.filter(t => 
+      t.agent_nom === agent.nom || 
+      String(t.agent) === String(agent.id)
+    );
+    setAuditTickets(agentTickets);
+  };
+
+  const handleAuditSelectTicket = async (ticket) => {
+    setAuditSelectedTicket(ticket);
+    setAuditLoading(true);
+    try {
+      const msgs = await getMessages(ticket.id);
+      setAuditMessages(Array.isArray(msgs) ? msgs : msgs.results || []);
+    } catch (err) {
+      console.error('Failed to load audit messages:', err);
+      setAuditMessages([]);
+    } finally {
+      setAuditLoading(false);
+    }
+  };
 
   const handleExportPDF = async () => {
     setExporting(true);
@@ -218,7 +267,7 @@ export default function AdminView() {
               </p>
             </div>
             <button
-              onClick={() => setAssignmentMode(prev => prev === 'auto' ? 'manual' : 'auto')}
+              onClick={() => setAssignmentMode(assignmentMode === 'auto' ? 'manual' : 'auto')}
               className={cn(
                 "relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer",
                 assignmentMode === 'auto' ? "bg-[#0055A4]" : "bg-slate-300"
@@ -255,7 +304,7 @@ export default function AdminView() {
       )}
 
       {activeTab === 'agents' && (
-        <AgentManagement agents={agents} performances={performances} onRefresh={fetchAll} />
+        <AgentManagement agents={agents} performances={performances} onRefresh={fetchAll} onAuditAgent={handleAuditAgent} />
       )}
 
       {activeTab === 'history' && (
@@ -264,6 +313,85 @@ export default function AdminView() {
 
       {activeTab === 'sessions' && (
         <AdminSessions sessions={sessions} />
+      )}
+
+      {/* ─── Audit Modal ─── */}
+      {auditAgent && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+            {/* Header */}
+            <div className="p-6 border-b bg-slate-50/50 flex items-center gap-4">
+              <div className="bg-[#0055A4]/10 p-3 rounded-xl">
+                <Eye className="w-5 h-5 text-[#0055A4]" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-xl font-black uppercase tracking-tighter text-[#0055A4]">Audit — {auditAgent.prenom} {auditAgent.nom}</h3>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">Lecture seule des conversations</p>
+              </div>
+              <button onClick={() => { setAuditAgent(null); setAuditSelectedTicket(null); setAuditMessages([]); }} className="p-2 rounded-xl hover:bg-slate-100 cursor-pointer">
+                <X className="w-5 h-5 text-slate-400" />
+              </button>
+            </div>
+
+            <div className="flex flex-1 overflow-hidden">
+              {/* Tickets list */}
+              <div className="w-1/3 border-r overflow-y-auto">
+                {auditLoading ? (
+                  <div className="flex items-center justify-center h-40"><Loader2 className="w-6 h-6 animate-spin text-[#0055A4]" /></div>
+                ) : auditTickets.length === 0 ? (
+                  <p className="p-6 text-center text-xs text-slate-400 font-bold uppercase">Aucun ticket</p>
+                ) : (
+                  auditTickets.map(t => (
+                    <button key={t.id} onClick={() => handleAuditSelectTicket(t)}
+                      className={`w-full text-left px-5 py-4 border-b border-slate-100 hover:bg-slate-50 transition-colors cursor-pointer ${
+                        auditSelectedTicket?.id === t.id ? 'bg-[#0055A4]/5 border-l-4 border-l-[#0055A4]' : ''
+                      }`}>
+                      <p className="text-[11px] font-black text-slate-900 uppercase tracking-tight">{t.numero_ticket}</p>
+                      <p className="text-[10px] text-slate-400 font-bold mt-0.5 line-clamp-1">{t.titre}</p>
+                      <p className="text-[9px] text-slate-300 font-bold mt-0.5">{t.client_prenom} {t.client_nom} — {t.statut}</p>
+                    </button>
+                  ))
+                )}
+              </div>
+
+              {/* Messages */}
+              <div className="flex-1 flex flex-col">
+                {!auditSelectedTicket ? (
+                  <div className="flex-1 flex items-center justify-center">
+                    <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">Sélectionnez un ticket</p>
+                  </div>
+                ) : (
+                  <ScrollArea className="flex-1 p-6">
+                    <div className="space-y-3">
+                      {auditMessages.map((m, idx) => {
+                        const isClient = (m.expediteur_role || m.expediteur_type) === 'client';
+                        return (
+                          <div key={m.id || idx} className={`flex ${isClient ? 'justify-start' : 'justify-end'}`}>
+                            <div className={`max-w-[80%] p-4 rounded-2xl text-sm ${
+                              isClient
+                                ? 'bg-slate-100 text-slate-800 rounded-tl-none'
+                                : 'bg-[#0055A4] text-white rounded-tr-none'
+                            }`}>
+                              <p className="font-bold leading-relaxed">{m.contenu}</p>
+                              <p className={`text-[9px] mt-2 font-black uppercase opacity-60 ${
+                                isClient ? 'text-slate-400' : 'text-white'
+                              }`}>
+                                {isClient ? 'Client' : (m.expediteur_prenom || 'Agent')} • {m.date_envoi ? new Date(m.date_envoi).toLocaleString('fr-FR') : new Date(m.created_at).toLocaleString('fr-FR')}
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                      {auditMessages.length === 0 && (
+                        <p className="text-center text-xs text-slate-400 font-bold uppercase py-10">Aucun message</p>
+                      )}
+                    </div>
+                  </ScrollArea>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -98,6 +98,12 @@ class MessagesTicketView(APIView):
                 lu_par_client=(request.user.role == 'client'),
                 lu_par_agent=(request.user.role != 'client'),
             )
+            
+            # Changer le statut du ticket si un agent répond
+            if request.user.role != 'client' and ticket.statut in ['soumis', 'ouvert']:
+                ticket.statut = 'en_cours'
+                ticket.save()
+
             return Response(MessageSerializer(message).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

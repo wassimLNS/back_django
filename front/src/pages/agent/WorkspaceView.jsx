@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useContext, useMemo } from 'react';
+import React, { useState, useEffect, useContext, useMemo, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AuthContext } from '@/contexts/AuthContext';
-import { getAgentTickets, getAgentTicketDetail, updateTicketStatus, escalateTicket, getEscalatedTickets } from '@/api/tickets';
+import { getAgentTickets, getAgentTicketDetail, updateTicketStatus, escalateTicket, getEscalatedTickets, getTicketClientHistory } from '@/api/tickets';
 import { getMessages, sendMessage as sendMessageAPI, getAISummary } from '@/api/chat';
 import { useWebSocket } from '@/hooks/useWebSocket';
 import { AgentDashboard } from '@/components/features/workspace/AgentDashboard';
@@ -38,6 +38,11 @@ export default function WorkspaceView({ agentRole = 'agent' }) {
   const [loadingAI, setLoadingAI] = useState(false);
   const [previewFile, setPreviewFile] = useState(null);
   const [loadingPreview, setLoadingPreview] = useState(false);
+  const [clientHistory, setClientHistory] = useState([]);
+  const [showHistoryPanel, setShowHistoryPanel] = useState(false);
+  const [expandedHistory, setExpandedHistory] = useState(null);
+  const [historyChats, setHistoryChats] = useState({});
+  const messagesEndRef = useRef(null);
 
   // Fetch tickets
   const fetchTickets = async () => {
@@ -97,6 +102,16 @@ export default function WorkspaceView({ agentRole = 'agent' }) {
     }
     setShowEscalation(false);
     setAiSummary(null);
+    setShowHistoryPanel(false);
+    setExpandedHistory(null);
+
+    // Fetch client history
+    try {
+      const history = await getTicketClientHistory(ticket.id);
+      setClientHistory(Array.isArray(history) ? history : history.results || []);
+    } catch (err) {
+      setClientHistory([]);
+    }
 
     // Charger le résumé IA pour agents technique/annexe
     if (agentRole !== 'agent') {
@@ -123,6 +138,11 @@ export default function WorkspaceView({ agentRole = 'agent' }) {
     const newWsMessages = wsMessages.filter(m => !httpIds.has(m.id));
     return [...chatMessages, ...newWsMessages];
   }, [chatMessages, wsMessages]);
+
+  // Auto-scroll chat when new messages arrive
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [allMessages]);
 
   // Send chat message
   const handleSendMessage = async () => {
@@ -250,6 +270,10 @@ export default function WorkspaceView({ agentRole = 'agent' }) {
               </Badge>
             </div>
             <div className="workspace-drawer-actions">
+              <Button variant="ghost" className="workspace-escalate-btn" onClick={() => setShowHistoryPanel(!showHistoryPanel)}>
+                <Calendar className="w-4 h-4 mr-2" />
+                Historique
+              </Button>
               {agentRole === 'agent' && !isClosed && (
                 <Button variant="ghost" className="workspace-escalate-btn" onClick={() => setShowEscalation(!showEscalation)} disabled={isSummarizing}>
                   {isSummarizing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <ArrowUpCircle className="w-4 h-4 mr-2" />}
@@ -277,6 +301,84 @@ export default function WorkspaceView({ agentRole = 'agent' }) {
                     <span className="text-[10px] font-black uppercase">{t('sidebar.brand_sub_annexe')}</span>
                   </Button>
                 </div>
+              </div>
+            )}
+
+            {/* History Panel */}
+            {showHistoryPanel && (
+              <div className="p-8 bg-slate-50 border-b shadow-inner shrink-0 max-h-[30vh] overflow-y-auto">
+                <p className="text-[11px] font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                  <Calendar className="w-4 h-4" /> Historique du client ({clientHistory.length})
+                </p>
+                {clientHistory.length > 0 ? (
+                  <div className="space-y-4">
+                    {clientHistory.map(hist => (
+                      <div key={hist.id} className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                        <div 
+                          className="flex justify-between items-center p-4 cursor-pointer hover:bg-slate-50 transition-colors"
+                          onClick={async () => {
+                            if (expandedHistory === hist.id) {
+                              setExpandedHistory(null);
+                            } else {
+                              setExpandedHistory(hist.id);
+                              if (!historyChats[hist.id]) {
+                                try {
+                                  const msgs = await getMessages(hist.id);
+                                  setHistoryChats(prev => ({ ...prev, [hist.id]: Array.isArray(msgs) ? msgs : msgs.results || [] }));
+                                } catch (e) {
+                                  setHistoryChats(prev => ({ ...prev, [hist.id]: [] }));
+                                }
+                              }
+                            }
+                          }}
+                        >
+                          <div>
+                            <p className="text-xs font-black text-[#0055A4] uppercase flex items-center gap-2">
+                              {hist.numero_ticket}
+                              <Badge variant="outline" className="text-[8px] uppercase font-black bg-slate-100">{hist.statut}</Badge>
+                            </p>
+                            <p className="text-[10px] font-bold text-slate-500 mt-1">{hist.titre}</p>
+                          </div>
+                          <Eye className={cn("w-4 h-4 text-slate-400 transition-transform", expandedHistory === hist.id && "rotate-180")} />
+                        </div>
+                        {expandedHistory === hist.id && (
+                          <div className="p-4 bg-slate-50 border-t border-slate-100 max-h-[300px] overflow-y-auto">
+                            {!historyChats[hist.id] ? (
+                              <p className="text-xs text-slate-400 font-bold text-center py-4 text-[10px] uppercase tracking-widest">Chargement...</p>
+                            ) : historyChats[hist.id].length === 0 ? (
+                              <p className="text-xs text-slate-400 font-bold text-center py-4 text-[10px] uppercase tracking-widest">Aucun message pour ce ticket</p>
+                            ) : (
+                              <div className="space-y-3">
+                                {hist.description && (
+                                  <div className="bg-white p-3 rounded-xl border">
+                                    <p className="text-[9px] font-black text-slate-400 uppercase mb-1">Signalement Initial</p>
+                                    <p className="text-xs font-bold text-slate-700">{hist.description}</p>
+                                  </div>
+                                )}
+                                {historyChats[hist.id].map(msg => {
+                                  const isAgent = msg.expediteur_role !== 'client';
+                                  return (
+                                    <div key={msg.id} className={cn("max-w-[85%] p-3 rounded-2xl text-xs", 
+                                      isAgent ? "ml-auto bg-slate-200 text-slate-800 rounded-tr-none" 
+                                              : "mr-auto bg-white border text-slate-800 rounded-tl-none"
+                                    )}>
+                                      <p className="font-bold">{msg.contenu}</p>
+                                      <p className="text-[8px] font-black uppercase opacity-50 mt-1 text-right">
+                                        {msg.expediteur_role} • {new Date(msg.date_envoi || msg.date).toLocaleString('fr-FR')}
+                                      </p>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-slate-400 font-bold">Aucun autre ticket trouvé pour ce client.</p>
+                )}
               </div>
             )}
 
@@ -426,6 +528,7 @@ export default function WorkspaceView({ agentRole = 'agent' }) {
                       <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">Aucun message pour le moment</p>
                     </div>
                   )}
+                  <div ref={messagesEndRef} />
                 </div>
               </div>
             </div>

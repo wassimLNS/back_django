@@ -44,7 +44,22 @@ export default function LoginStaff() {
       };
       navigate(roleRoutes[user.role] || '/staff');
     } catch (err) {
-      setError(err.response?.data?.detail || err.response?.data?.message || t('login.error_invalid'));
+      let msg = t('login.error_invalid');
+      const data = err.response?.data;
+      if (data) {
+        if (typeof data === 'string') msg = data;
+        else if (data.detail) msg = data.detail;
+        else if (data.message) msg = data.message;
+        else if (data.error) msg = data.error;
+        else if (data.non_field_errors) msg = data.non_field_errors[0];
+        else {
+          const firstKey = Object.keys(data)[0];
+          if (firstKey && Array.isArray(data[firstKey])) {
+            msg = data[firstKey][0];
+          }
+        }
+      }
+      setError(typeof msg === 'string' ? msg : JSON.stringify(msg));
     } finally {
       setLoading(false);
     }

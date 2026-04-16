@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -15,6 +15,12 @@ export function CustomerChatDrawer({ ticket, messages = [], onClose, onSendMessa
   const { t } = useTranslation();
   const [previewFile, setPreviewFile] = useState(null); // { blobUrl, nom, type_mime }
   const [loadingPreview, setLoadingPreview] = useState(false);
+  const messagesEndRef = useRef(null);
+
+  // Focus and scroll to bottom when messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, ticket]);
 
   const handleSend = () => {
     if (!replyText.trim()) return;
@@ -62,7 +68,10 @@ export function CustomerChatDrawer({ ticket, messages = [], onClose, onSendMessa
   return (
     <>
     <Sheet open={!!ticket} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent className="sm:max-w-xl p-0 h-full flex flex-col bg-slate-50">
+      <SheetContent 
+        side="right" 
+        className="w-[100vw] sm:w-[90vw] md:max-w-[500px] p-0 flex flex-col h-full bg-slate-50 border-none shadow-2xl"
+      >
         {/* Header */}
         <SheetHeader className="p-6 bg-[#0055A4] text-white shrink-0">
           <div className="flex items-center gap-4">
@@ -214,6 +223,7 @@ export function CustomerChatDrawer({ ticket, messages = [], onClose, onSendMessa
                   </p>
                 </div>
               )}
+              <div ref={messagesEndRef} />
             </div>
 
           </div>

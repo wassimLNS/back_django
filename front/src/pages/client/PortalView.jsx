@@ -124,6 +124,7 @@ export default function PortalView() {
             tickets={tickets}
             loading={loading}
             onSelectTicket={handleSelectTicket}
+            onTicketDeleted={() => fetchTickets()}
           />
         )}
       </div>

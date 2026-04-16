@@ -137,7 +137,14 @@ class MettreAJourTicketSerializer(serializers.ModelSerializer):
 
     def validate_statut(self, value):
         ticket = self.instance
-        transitions = {'ouvert': ['en_cours', 'rejete'], 'en_cours': ['resolu', 'escalade_technique', 'escalade_annexe', 'rejete'], 'escalade_technique': ['resolu', 'ferme'], 'escalade_annexe': ['resolu', 'ferme'], 'resolu': ['ferme']}
+        transitions = {
+            'soumis': ['ouvert', 'en_cours', 'resolu', 'rejete'], 
+            'ouvert': ['en_cours', 'resolu', 'rejete'], 
+            'en_cours': ['resolu', 'escalade_technique', 'escalade_annexe', 'rejete'], 
+            'escalade_technique': ['resolu', 'ferme'], 
+            'escalade_annexe': ['resolu', 'ferme'], 
+            'resolu': ['ferme']
+        }
         autorises = transitions.get(ticket.statut, [])
         if value not in autorises:
             raise serializers.ValidationError(f"Transition invalide : {ticket.statut} → {value}")
