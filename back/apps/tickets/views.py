@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from .models import Ticket, TypeService, PieceJointe, Escalade
 from .serializers import (TypeServiceSerializer, CreerTicketSerializer, TicketListSerializer, TicketDetailSerializer, MettreAJourTicketSerializer, SatisfactionSerializer, PieceJointeUploadSerializer, CreerEscaladeSerializer, EscaladeSerializer)
-from apps.users.permissions import EstClient, EstAgent, EstAgentEscalade, EstAdmin
+from apps.users.permissions import EstClient, EstAgent, EstAgentEscalade, EstAdmin, EstAgentOuPlus
 
 
 class TypesServiceView(APIView):
@@ -76,11 +76,17 @@ class MesTicketsAgentView(APIView):
 
 
 class TicketAgentDetailView(APIView):
-    permission_classes = [IsAuthenticated, EstAgent]
+    permission_classes = [IsAuthenticated, EstAgentOuPlus]
 
     def get_ticket(self, ticket_id, agent):
         try:
-            return Ticket.objects.get(id=ticket_id, agent=agent)
+            if agent.role == 'agent':
+                return Ticket.objects.get(id=ticket_id, agent=agent)
+            elif agent.role == 'agent_technique':
+                return Ticket.objects.get(id=ticket_id, centre=agent.centre, statut='escalade_technique')
+            elif agent.role == 'agent_annexe':
+                return Ticket.objects.get(id=ticket_id, centre=agent.centre, statut='escalade_annexe')
+            return None
         except Ticket.DoesNotExist:
             return None
 

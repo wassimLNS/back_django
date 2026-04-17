@@ -383,7 +383,7 @@ export default function WorkspaceView({ agentRole = 'agent' }) {
             )}
 
             {/* Ticket Summary Bar */}
-            <div className="workspace-ticket-summary-bar" style={{gridTemplateColumns: 'repeat(4, 1fr)'}}>
+            <div className="workspace-ticket-summary-bar">
               <div className="workspace-summary-item">
                 <User className="w-5 h-5 text-[#0055A4]" />
                 <div>
@@ -417,6 +417,18 @@ export default function WorkspaceView({ agentRole = 'agent' }) {
                 </div>
               </div>
             </div>
+            {/* Description in bar */}
+            {selectedTicket.description && (
+              <div className="px-6 py-4 bg-white border-b shrink-0">
+                <div className="flex items-start gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                  <FileText className="w-5 h-5 text-[#0055A4] shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-[9px] font-black uppercase text-slate-400 tracking-widest mb-1">Description</p>
+                    <p className="text-sm font-bold text-slate-700 leading-relaxed">{selectedTicket.description}</p>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Pieces Jointes */}
             {piecesJointes.length > 0 && (
@@ -439,7 +451,6 @@ export default function WorkspaceView({ agentRole = 'agent' }) {
             {/* Chat Area */}
             <div className="workspace-chat-container">
               <div className="workspace-chat-wrapper">
-                {/* AI Summary (for escalated tickets — tech/annexe) */}
                 {agentRole !== 'agent' && (
                   <div className="workspace-ai-summary">
                     <div className="ai-header">
@@ -455,23 +466,10 @@ export default function WorkspaceView({ agentRole = 'agent' }) {
                       <div className="space-y-4">
                         <p className="ai-text">{aiSummary.resume}</p>
                         {/* Timeline */}
-                        <div className="space-y-1.5 mt-3">
-                          {aiSummary.timeline?.map((item, i) => (
-                            <p key={i} className="text-[11px] font-bold text-slate-500">{item}</p>
-                          ))}
-                        </div>
-                        {/* Key messages */}
-                        {aiSummary.messages_cles?.length > 0 && (
-                          <div className="mt-3 space-y-2">
-                            <p className="text-[10px] font-black uppercase text-purple-500 tracking-widest">Messages Clés</p>
-                            {aiSummary.messages_cles.map((msg, i) => (
-                              <div key={i} className="bg-white/80 rounded-xl p-3 border border-purple-100">
-                                <div className="flex justify-between items-center mb-1">
-                                  <span className="text-[10px] font-black uppercase text-purple-600">{msg.label}</span>
-                                  <span className="text-[10px] font-bold text-slate-400">{msg.date}</span>
-                                </div>
-                                <p className="text-xs text-slate-700">« {msg.contenu} »</p>
-                              </div>
+                        {aiSummary.timeline?.length > 0 && (
+                          <div className="space-y-1.5 mt-3">
+                            {aiSummary.timeline.map((item, i) => (
+                              <p key={i} className="text-[11px] font-bold text-slate-500">{item}</p>
                             ))}
                           </div>
                         )}
@@ -492,14 +490,6 @@ export default function WorkspaceView({ agentRole = 'agent' }) {
                     ) : (
                       <p className="text-xs text-slate-400">Aucun résumé disponible</p>
                     )}
-                  </div>
-                )}
-
-                {/* Initial Signal / Description */}
-                {selectedTicket.description && (
-                  <div className="workspace-initial-signal">
-                    <p className="signal-label"><Info className="w-4 h-4" /> Signalement Initial</p>
-                    <p className="signal-text">"{selectedTicket.description}"</p>
                   </div>
                 )}
 

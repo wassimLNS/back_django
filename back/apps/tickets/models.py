@@ -128,10 +128,21 @@ class Ticket(models.Model):
         # Génération automatique du numéro de ticket
         if not self.numero_ticket:
             from django.utils import timezone
+            from django.db.models import Max
             annee = timezone.now().year
-            # Compte le nombre de tickets existants pour générer le numéro
-            count = Ticket.objects.count() + 1
-            self.numero_ticket = f"TKT-{annee}-{str(count).zfill(6)}"
+            prefix = f"TKT-{annee}-"
+            # Trouver le plus grand numéro existant pour cette année
+            last = Ticket.objects.filter(numero_ticket__startswith=prefix).aggregate(
+                max_num=Max('numero_ticket')
+            )['max_num']
+            if last:
+                try:
+                    last_num = int(last.split('-')[-1])
+                except (ValueError, IndexError):
+                    last_num = 0
+            else:
+                last_num = 0
+            self.numero_ticket = f"{prefix}{str(last_num + 1).zfill(6)}"
         super().save(*args, **kwargs)
 
 

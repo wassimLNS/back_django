@@ -159,18 +159,8 @@ class ResumeIAView(APIView):
         client_msgs = messages.filter(expediteur_type='client').count()
         agent_msgs = total_msgs - client_msgs
 
-        # Timeline résumée
+        # Timeline résumée (Informations réduites, le reste est dans la barre)
         timeline = []
-        timeline.append(f"📋 Ticket {ticket.numero_ticket} créé le {ticket.created_at.strftime('%d/%m/%Y à %H:%M')}")
-        timeline.append(f"👤 Client : {client_name} ({ticket.client.telephone or 'N/A'})")
-        timeline.append(f"🔧 Service : {service}")
-        timeline.append(f"⚡ Priorité : {ticket.priorite.upper()}")
-
-        if ticket.agent:
-            timeline.append(f"👨‍💼 Agent initial : {agent_name}")
-
-        if ticket.pris_en_charge_a:
-            timeline.append(f"⏱️ Pris en charge le {ticket.pris_en_charge_a.strftime('%d/%m/%Y à %H:%M')}")
 
         # Résumé des escalades
         for esc in escalades:
@@ -206,19 +196,8 @@ class ResumeIAView(APIView):
                     'label': 'Dernière réponse agent'
                 })
 
-        # Génération du résumé textuel
-        summary_parts = [
-            f"Le client {client_name} a signalé un problème de type « {service} » (priorité {ticket.priorite}).",
-        ]
-        if ticket.description:
-            summary_parts.append(f"Description initiale : « {ticket.description[:300]} »")
-        summary_parts.append(f"La conversation contient {total_msgs} messages ({client_msgs} du client, {agent_msgs} de l'équipe support).")
-
-        if escalades.exists():
-            esc = escalades.first()
-            summary_parts.append(f"Le ticket a été escaladé en {esc.type_escalade} avec le motif : « {esc.motif} »")
-
-        summary_text = " ".join(summary_parts)
+        # Génération du résumé textuel (Laissé vide pour l'intégration de l'API externe)
+        summary_text = ""
 
         return Response({
             'resume': summary_text,

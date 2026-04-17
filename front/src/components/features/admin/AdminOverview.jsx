@@ -9,8 +9,9 @@ import { cn } from '@/lib/utils';
 
 const COLORS = ['#0055A4', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'];
 
-export function AdminOverview({ stats, performances = [], tickets = [] }) {
+export function AdminOverview({ stats, performances: rawPerformances = [], tickets = [] }) {
   const { t } = useTranslation();
+  const performances = Array.isArray(rawPerformances) ? rawPerformances : [];
   const [activeDimension, setActiveDimension] = React.useState('types');
 
   const DIMENSIONS = [
